@@ -1,0 +1,303 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --color-primary: #E9D5FF; /* purple-200 - Soft lavender for trust and creativity */
+    --color-primary-foreground: #1C1917; /* stone-900 - Rich charcoal */
+    
+    /* Secondary Colors */
+    --color-secondary: #FEF3C7; /* amber-100 - Warm amber for energy */
+    --color-secondary-foreground: #1C1917; /* stone-900 */
+    
+    /* Accent Colors */
+    --color-accent: #FECACA; /* red-200 - Gentle coral for warmth */
+    --color-accent-foreground: #1C1917; /* stone-900 */
+    
+    /* Background Colors */
+    --color-background: #FEFCE8; /* yellow-50 - Warm cream canvas */
+    --color-foreground: #1C1917; /* stone-900 - Primary text */
+    
+    /* Surface Colors */
+    --color-card: #FFFFFF; /* white - Pure white for card clarity */
+    --color-card-foreground: #1C1917; /* stone-900 */
+    
+    --color-popover: #FFFFFF; /* white */
+    --color-popover-foreground: #1C1917; /* stone-900 */
+    
+    /* Muted Colors */
+    --color-muted: #F5F5F4; /* stone-100 */
+    --color-muted-foreground: #57534E; /* stone-600 - Warm gray for supporting info */
+    
+    /* Border & Input */
+    --color-border: #E7E5E4; /* stone-200 */
+    --color-input: #E7E5E4; /* stone-200 */
+    --color-ring: #E9D5FF; /* purple-200 - Lavender focus rings */
+    
+    /* Status Colors */
+    --color-success: #BBF7D0; /* green-200 - Soft mint for achievement */
+    --color-success-foreground: #1C1917; /* stone-900 */
+    
+    --color-warning: #FED7AA; /* orange-200 - Gentle peach for attention */
+    --color-warning-foreground: #1C1917; /* stone-900 */
+    
+    --color-error: #FECDD3; /* rose-200 - Soft rose for gentle errors */
+    --color-error-foreground: #1C1917; /* stone-900 */
+    
+    --color-destructive: #FECDD3; /* rose-200 */
+    --color-destructive-foreground: #1C1917; /* stone-900 */
+    
+    /* Radius */
+    --radius: 1rem; /* 16px */
+  }
+
+  .dark {
+    /* Primary Colors */
+    --color-primary: #C4B5FD; /* purple-300 - Muted lavender */
+    --color-primary-foreground: #F5F5F4; /* stone-100 */
+    
+    /* Secondary Colors */
+    --color-secondary: #FDE68A; /* amber-200 - Muted amber */
+    --color-secondary-foreground: #1C1917; /* stone-900 */
+    
+    /* Accent Colors */
+    --color-accent: #FCA5A5; /* red-300 - Muted coral */
+    --color-accent-foreground: #F5F5F4; /* stone-100 */
+    
+    /* Background Colors */
+    --color-background: #1C1917; /* stone-900 - Warm dark base */
+    --color-foreground: #F5F5F4; /* stone-100 - Light text */
+    
+    /* Surface Colors */
+    --color-card: #292524; /* stone-800 - Elevated surface */
+    --color-card-foreground: #F5F5F4; /* stone-100 */
+    
+    --color-popover: #292524; /* stone-800 */
+    --color-popover-foreground: #F5F5F4; /* stone-100 */
+    
+    /* Muted Colors */
+    --color-muted: #44403C; /* stone-700 */
+    --color-muted-foreground: #D6D3D1; /* stone-300 */
+    
+    /* Border & Input */
+    --color-border: #44403C; /* stone-700 */
+    --color-input: #44403C; /* stone-700 */
+    --color-ring: #C4B5FD; /* purple-300 */
+    
+    /* Status Colors */
+    --color-success: #86EFAC; /* green-300 */
+    --color-success-foreground: #1C1917; /* stone-900 */
+    
+    --color-warning: #FDBA74; /* orange-300 */
+    --color-warning-foreground: #1C1917; /* stone-900 */
+    
+    --color-error: #FCA5A5; /* rose-300 */
+    --color-error-foreground: #1C1917; /* stone-900 */
+    
+    --color-destructive: #FCA5A5; /* rose-300 */
+    --color-destructive-foreground: #F5F5F4; /* stone-100 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+  
+  h2 {
+    font-size: 1.875rem;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  
+  h5 {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  
+  caption, .caption {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    letter-spacing: 0.025em;
+  }
+  
+  .data-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  p {
+    max-width: 65ch;
+  }
+  
+  @media (max-width: 768px) {
+    body {
+      font-size: 15px;
+    }
+  }
+}
+
+@layer utilities {
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+  
+  .transition-smooth {
+    transition: all 250ms ease-out;
+  }
+  
+  .transition-spring {
+    transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .shadow-warm-sm {
+    box-shadow: 0 1px 3px rgba(139, 69, 19, 0.08);
+  }
+  
+  .shadow-warm {
+    box-shadow: 0 2px 8px rgba(139, 69, 19, 0.08);
+  }
+  
+  .shadow-warm-md {
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
+  }
+  
+  .shadow-warm-lg {
+    box-shadow: 0 8px 16px rgba(139, 69, 19, 0.12);
+  }
+  
+  .shadow-warm-xl {
+    box-shadow: 0 20px 25px -5px rgba(139, 69, 19, 0.15);
+  }
+  
+  .hover-lift {
+    transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.12);
+  }
+  
+  .press-scale:active {
+    transform: scale(0.98);
+  }
+  
+  .focus-ring-lavender:focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  
+  .scrollbar-warm::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-warm::-webkit-scrollbar-track {
+    background: var(--color-muted);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-warm::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-warm::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+}
+
+.navbar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: 12px;
+  transition: all 250ms ease-out;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: 16px;
+  transition: all 250ms ease-out;
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
+}
+
+@media (max-width: 1024px) {
+  .sidebar-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+}
