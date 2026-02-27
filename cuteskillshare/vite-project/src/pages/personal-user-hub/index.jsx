@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import SoftNavbar from '../../components/ui/SoftNavbar';
-import MinimalSidebar from '../../components/ui/MinimalSidebar';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import ContextualModal from '../../components/ui/ContextualModal';
+import NewExchangeModal from '../../components/NewExchangeModal';
 import HeroWelcomeCard from './components/HeroWelcomeCard';
 import OngoingExchangeCard from './components/OngoingExchangeCard';
 import SmartMatchCard from './components/SmartMatchCard';
@@ -12,15 +13,53 @@ import MarketplacePreviewCard from './components/MarketplacePreviewCard';
 import Button from '../../components/ui/Button';
 
 const PersonalUserHub = () => {
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
-
-  const userData = {
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+  const [userData, setUserData] = useState({
     name: "Alex Rivera",
     email: "alex.rivera@skillgarden.com",
     skillCoins: 1250,
     currentStreak: 12,
     totalExchanges: 24
+  });
+
+  useEffect(() => {
+    // Load user data from Clerk
+    if (user) {
+      setUserData(prev => ({
+        ...prev,
+        name: user.fullName || user.firstName || prev.name,
+        email: user.primaryEmailAddress?.emailAddress || prev.email
+      }));
+    }
+  }, [user]);
+
+  const handleProfileClick = async (action) => {
+    if (action === 'logout') {
+      // Sign out using Clerk
+      await signOut();
+      navigate('/auth');
+    } else if (action === 'profile') {
+      // Show profile modal
+      setModalContent({
+        type: 'user-profile',
+        userName: userData?.name,
+        userTitle: 'Full Stack Developer',
+        location: 'San Francisco, CA',
+        skills: ['React', 'Node.js', 'TypeScript', 'GraphQL'],
+        learningGoals: ['UI Design', 'Motion Graphics', 'Figma'],
+        skillCoins: userData?.skillCoins,
+        exchangesCompleted: userData?.totalExchanges
+      });
+      setModalOpen(true);
+    } else {
+      console.log('Profile action:', action);
+      // Handle other profile actions here
+    }
   };
 
   const ongoingExchanges = [
@@ -256,34 +295,10 @@ const PersonalUserHub = () => {
   }];
 
 
-  const handleProfileClick = (action) => {
-    console.log('Profile action:', action);
-    if (action === 'profile') {
-      setModalContent({
-        type: 'user-profile',
-        userName: userData?.name,
-        userTitle: 'Full Stack Developer',
-        location: 'San Francisco, CA',
-        skills: ['React', 'Node.js', 'TypeScript', 'GraphQL'],
-        learningGoals: ['UI Design', 'Motion Graphics', 'Figma'],
-        skillCoins: userData?.skillCoins,
-        exchangesCompleted: userData?.totalExchanges
-      });
-      setModalOpen(true);
-    }
-  };
-
   const handleSidebarAction = (action) => {
     console.log('Sidebar action:', action);
     if (action?.action === 'new-exchange') {
-      setModalContent({
-        type: 'exchange-request',
-        title: 'Start New Exchange',
-        description: 'Connect with a community member to exchange skills',
-        userSkill: 'React Development',
-        targetSkill: 'UI/UX Design'
-      });
-      setModalOpen(true);
+      setExchangeModalOpen(true);
     }
   };
 
@@ -356,18 +371,7 @@ const PersonalUserHub = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <SoftNavbar
-        user={userData}
-        skillCoins={userData?.skillCoins}
-        onProfileClick={handleProfileClick} />
-      
-      <MinimalSidebar
-        activeContext="exchanges"
-        onActionClick={handleSidebarAction} />
-      
-      <main className="lg:ml-60 pt-16 min-h-screen">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 lg:py-10">
+    <div className="overflow-x-hidden">
           <div className="mb-6 md:mb-8 lg:mb-10">
             <HeroWelcomeCard
               userName={userData?.name}
@@ -518,14 +522,14 @@ const PersonalUserHub = () => {
               )}
             </div>
           </section>
-        </div>
-      </main>
       <ContextualModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         content={modalContent}
         theme="warm" />
-      
+      <NewExchangeModal
+        isOpen={exchangeModalOpen}
+        onClose={() => setExchangeModalOpen(false)} />
     </div>);
 
 };

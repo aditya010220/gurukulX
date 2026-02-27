@@ -1,7 +1,19 @@
-body {
+html, body {
   margin: 0;
   padding: 0;
   font-family: Inter;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+html, body, #root {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
 * {

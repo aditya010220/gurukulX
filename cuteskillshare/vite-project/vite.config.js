@@ -26,3 +26,4 @@ export default defineConfig({
     allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
   }
 });
+

@@ -1,44 +1,47 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { cn } from '../../utils/cn';
+import NewExchangeModal from '../NewExchangeModal';
 
+const menuItems = [
+  { icon: 'LayoutGrid', label: 'Dashboard', href: '/' },
+  { icon: 'Plus', label: 'New Exchange', href: null, isModal: true },
+  { icon: 'Sparkles', label: 'Smart Matches', href: '/matches' },
+  { icon: 'Bot', label: 'AI Assistant', href: '/assistant' },
+  { icon: 'ArrowLeftRight', label: 'My Swaps', href: '/swaps' },
+  { icon: 'Users', label: 'Groups', href: '/groups' },
+  { icon: 'Store', label: 'Marketplace', href: '/marketplace' },
+  { icon: 'Wallet', label: 'Wallet', href: '/wallet' },
+];
 
-const MinimalSidebar = ({ activeContext, onActionClick }) => {
+const bottomItems = [
+  { icon: 'Settings', label: 'Settings', href: '/settings' },
+  { icon: 'LogOut', label: 'Logout', href: '/logout' },
+];
+
+const MinimalSidebar = ({ onCollapseChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-
-  const quickActions = [
-    { action: 'new-exchange', label: 'New Exchange', icon: 'Plus', context: 'exchanges' },
-    { action: 'find-match', label: 'Find Match', icon: 'Users', context: 'exchanges' },
-    { action: 'browse-skills', label: 'Browse Skills', icon: 'BookOpen', context: 'marketplace' },
-    { action: 'community-feed', label: 'Community', icon: 'MessageSquare', context: 'community' },
-  ];
-
-  const filters = [
-    { id: 'all', label: 'All Exchanges', icon: 'LayoutGrid' },
-    { id: 'active', label: 'Active', icon: 'Activity' },
-    { id: 'pending', label: 'Pending', icon: 'Clock' },
-    { id: 'completed', label: 'Completed', icon: 'CheckCircle' },
-  ];
-
-  const handleActionClick = (action) => {
-    if (onActionClick) {
-      onActionClick(action);
-    }
-  };
-
-  const handleFilterClick = (filterId) => {
-    setSelectedFilter(filterId);
-    if (onActionClick) {
-      onActionClick({ type: 'filter', value: filterId });
-    }
-  };
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
+  const toggleCollapse = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    if (onCollapseChange) onCollapseChange(next);
+  };
+
+  const isActive = (href) => location.pathname === href;
+
   return (
     <>
+      {/* Mobile Toggle Button */}
       <button
         onClick={toggleSidebar}
         className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-card rounded-2xl shadow-warm-md flex items-center justify-center hover-lift press-scale focus-ring-lavender"
@@ -46,119 +49,134 @@ const MinimalSidebar = ({ activeContext, onActionClick }) => {
       >
         <Icon name={isOpen ? 'X' : 'Menu'} size={24} color="var(--color-foreground)" />
       </button>
+
+      {/* Sidebar */}
       <aside
-        className={`
-          fixed lg:fixed top-0 left-0 h-full z-[90] bg-card shadow-warm-lg transition-smooth
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          w-64 lg:w-60
-        `}
+        className={cn(
+          "fixed top-0 left-0 h-screen bg-card border-r border-border p-5 overflow-y-auto flex flex-col z-[90] transition-all duration-300",
+          isCollapsed ? "w-20" : "w-64",
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        )}
       >
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <Icon name="Sprout" size={28} color="var(--color-primary-foreground)" />
-          </div>
-          <div className="hidden lg:block">
-            <p className="font-heading font-semibold text-foreground">SkillGarden</p>
-            <p className="text-xs text-muted-foreground caption">Your Learning Hub</p>
-          </div>
+        {/* Logo & Toggle */}
+        <div className="flex items-center justify-between mb-8">
+          <Link to="/" className={cn("flex items-center gap-2.5 group", isCollapsed && "mx-auto")}>
+            <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+              <Icon name="Sprout" size={20} color="var(--color-primary-foreground)" />
+            </div>
+            {!isCollapsed && <span className="text-lg font-bold text-foreground">SkillGarden</span>}
+          </Link>
+          <button
+            onClick={(e) => { e.preventDefault(); toggleCollapse(); }}
+            className="flex w-8 h-8 items-center justify-center rounded-lg hover:bg-muted transition-colors border border-border"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <Icon name={isCollapsed ? 'ChevronsRight' : 'ChevronsLeft'} size={18} color="var(--color-muted-foreground)" />
+          </button>
         </div>
 
-        <div className="p-4 space-y-6">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground caption mb-3 px-2">Quick Actions</h3>
-            <div className="space-y-1">
-              {quickActions?.map((action) => (
-                <button
-                  key={action?.action}
-                  onClick={() => handleActionClick(action)}
-                  className={`
-                    w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-smooth text-left
-                    ${activeContext === action?.context 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'hover:bg-muted text-foreground'
-                    }
-                  `}
+        {/* Main Nav */}
+        <div className="flex-1 space-y-1">
+          {!isCollapsed && (
+            <p className="text-[10px] font-semibold text-muted-foreground mb-3 uppercase tracking-widest px-4">
+              Menu
+            </p>
+          )}
+          <nav className="space-y-1">
+            {menuItems.map((item) => {
+              const active = !item.isModal && isActive(item.href);
+              const sharedClasses = cn(
+                "flex items-center gap-3 py-2.5 rounded-full text-sm font-medium transition-all duration-300 w-full",
+                isCollapsed ? "px-3 justify-center" : "px-4",
+                active
+                  ? "bg-primary/10 text-primary font-bold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                hoveredItem === item.label && !active && !isCollapsed && "translate-x-1"
+              );
+
+              if (item.isModal) {
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => setExchangeModalOpen(true)}
+                    onMouseEnter={() => setHoveredItem(item.label)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    title={isCollapsed ? item.label : undefined}
+                    className={sharedClasses}
+                  >
+                    <Icon name={item.icon} size={18} color="currentColor" />
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onMouseEnter={() => setHoveredItem(item.label)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  title={isCollapsed ? item.label : undefined}
+                  className={sharedClasses}
                 >
                   <Icon 
-                    name={action?.icon} 
-                    size={20} 
-                    color={activeContext === action?.context ? 'var(--color-primary-foreground)' : 'var(--color-foreground)'} 
+                    name={item.icon} 
+                    size={18} 
+                    color={active ? 'var(--color-primary)' : 'currentColor'} 
                   />
-                  <span className="font-medium">{action?.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground caption mb-3 px-2">Filter Exchanges</h3>
-            <div className="space-y-1">
-              {filters?.map((filter) => (
-                <button
-                  key={filter?.id}
-                  onClick={() => handleFilterClick(filter?.id)}
-                  className={`
-                    w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-smooth text-left
-                    ${selectedFilter === filter?.id 
-                      ? 'bg-secondary text-secondary-foreground' 
-                      : 'hover:bg-muted text-foreground'
-                    }
-                  `}
-                >
-                  <Icon 
-                    name={filter?.icon} 
-                    size={20} 
-                    color={selectedFilter === filter?.id ? 'var(--color-secondary-foreground)' : 'var(--color-foreground)'} 
-                  />
-                  <span className="font-medium">{filter?.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-border">
-            <button
-              onClick={() => handleActionClick({ action: 'notifications', context: 'general' })}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-smooth text-left"
-            >
-              <div className="relative">
-                <Icon name="Bell" size={20} color="var(--color-foreground)" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full" />
-              </div>
-              <span className="font-medium text-foreground">Notifications</span>
-              <span className="ml-auto px-2 py-0.5 bg-error rounded-full text-xs font-medium text-error-foreground">
-                3
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleActionClick({ action: 'help', context: 'general' })}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-smooth text-left mt-1"
-            >
-              <Icon name="HelpCircle" size={20} color="var(--color-foreground)" />
-              <span className="font-medium text-foreground">Help & Support</span>
-            </button>
-          </div>
+                  {!isCollapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border bg-card">
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-2xl">
-            <Icon name="Lightbulb" size={20} color="var(--color-warning-foreground)" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Learning Tip</p>
-              <p className="text-xs text-muted-foreground caption truncate">
-                Practice daily for best results
-              </p>
-            </div>
-          </div>
+        {/* Bottom Nav */}
+        <div className="pt-4 border-t border-border space-y-1">
+          {bottomItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.label}
+                to={item.href}
+                onMouseEnter={() => setHoveredItem(item.label)}
+                onMouseLeave={() => setHoveredItem(null)}
+                title={isCollapsed ? item.label : undefined}
+                className={cn(
+                  "flex items-center gap-3 py-2.5 rounded-full text-sm font-medium transition-all duration-300",
+                  isCollapsed ? "px-3 justify-center" : "px-4",
+                  active
+                    ? "bg-primary/10 text-primary font-bold"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  hoveredItem === item.label && !active && !isCollapsed && "translate-x-1"
+                )}
+              >
+                <Icon 
+                  name={item.icon} 
+                  size={18} 
+                  color={active ? 'var(--color-primary)' : 'currentColor'} 
+                />
+                {!isCollapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
         </div>
       </aside>
+
+      {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-background z-[85]"
+          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-[85]"
           onClick={toggleSidebar}
         />
       )}
+
+      {/* New Exchange Modal */}
+      <NewExchangeModal
+        isOpen={exchangeModalOpen}
+        onClose={() => setExchangeModalOpen(false)}
+      />
     </>
   );
 };

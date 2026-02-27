@@ -116,6 +116,11 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 16px;
     line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #root {
+    overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -244,6 +249,14 @@
   
   .scrollbar-warm::-webkit-scrollbar-thumb:hover {
     background: var(--color-muted-foreground);
+  }
+  
+  .cultural-shadow-subtle {
+    box-shadow: 0 2px 8px rgba(139, 69, 19, 0.08);
+  }
+  
+  .cultural-shadow-moderate {
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
   }
 }
 
