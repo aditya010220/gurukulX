@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import SoftNavbar from '../ui/SoftNavbar';
 import MinimalSidebar from '../ui/MinimalSidebar';
 
@@ -11,10 +13,25 @@ const AppLayout = () => {
   const { signOut } = useClerk();
   const navigate = useNavigate();
 
+  // Convex: sync user and get real data
+  const getOrCreate = useMutation(api.users.getOrCreate);
+  const convexUser = useQuery(api.users.getCurrent);
+  const balance = useQuery(api.wallet.getBalance);
+
+  // Sync Clerk user to Convex on mount/change
+  useEffect(() => {
+    if (user) {
+      getOrCreate({
+        name: user.fullName || user.firstName || 'Guest User',
+        email: user.primaryEmailAddress?.emailAddress || '',
+      }).catch(console.error);
+    }
+  }, [user?.id]);
+
   const userData = {
-    name: user?.fullName || user?.firstName || 'Guest User',
-    email: user?.primaryEmailAddress?.emailAddress || 'guest@skillgarden.com',
-    skillCoins: 1250,
+    name: convexUser?.name || user?.fullName || user?.firstName || 'Guest User',
+    email: convexUser?.email || user?.primaryEmailAddress?.emailAddress || 'guest@skillgarden.com',
+    skillCoins: balance ?? convexUser?.skillCoins ?? 0,
   };
 
   const handleProfileClick = async (action) => {

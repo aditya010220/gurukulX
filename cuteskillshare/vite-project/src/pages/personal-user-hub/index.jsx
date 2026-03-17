@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import ContextualModal from '../../components/ui/ContextualModal';
 import NewExchangeModal from '../../components/NewExchangeModal';
 import HeroWelcomeCard from './components/HeroWelcomeCard';
@@ -9,6 +11,7 @@ import SmartMatchCard from './components/SmartMatchCard';
 import AIAssistantBlock from './components/AIAssistantBlock';
 import CommunityFeedCard from './components/CommunityFeedCard';
 import MarketplacePreviewCard from './components/MarketplacePreviewCard';
+import { getTimeAgo } from '../../utils/getTimeAgo';
 
 import Button from '../../components/ui/Button';
 
@@ -19,24 +22,22 @@ const PersonalUserHub = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
-  const [userData, setUserData] = useState({
-    name: "Alex Rivera",
-    email: "alex.rivera@skillgarden.com",
-    skillCoins: 1250,
-    currentStreak: 12,
-    totalExchanges: 24
-  });
 
-  useEffect(() => {
-    // Load user data from Clerk
-    if (user) {
-      setUserData(prev => ({
-        ...prev,
-        name: user.fullName || user.firstName || prev.name,
-        email: user.primaryEmailAddress?.emailAddress || prev.email
-      }));
-    }
-  }, [user]);
+  // ─── Convex Queries (real-time) ─────────────────────────────
+  const convexUser = useQuery(api.users.getCurrent);
+  const activeExchanges = useQuery(api.exchanges.getActive);
+  const convexSmartMatches = useQuery(api.smartMatches.getForUser, {});
+  const communityPosts = useQuery(api.posts.list, { limit: 10 });
+  const featuredOfferings = useQuery(api.offerings.getFeatured);
+  const refreshMatches = useMutation(api.smartMatches.refresh);
+
+  const userData = {
+    name: convexUser?.name || user?.fullName || user?.firstName || "Guest User",
+    email: convexUser?.email || user?.primaryEmailAddress?.emailAddress || "",
+    skillCoins: convexUser?.skillCoins ?? 0,
+    currentStreak: convexUser?.currentStreak ?? 0,
+    totalExchanges: convexUser?.totalExchanges ?? 0
+  };
 
   const handleProfileClick = async (action) => {
     if (action === 'logout') {
@@ -62,7 +63,19 @@ const PersonalUserHub = () => {
     }
   };
 
-  const ongoingExchanges = [
+  // ─── Ongoing Exchanges from Convex (fallback to mock) ──────
+  const ongoingExchanges = activeExchanges && activeExchanges.length > 0 ? activeExchanges.map((e) => ({
+    id: e._id,
+    partnerName: e.partnerName,
+    partnerAvatar: e.partnerAvatar || "",
+    partnerAvatarAlt: `${e.partnerName} avatar`,
+    partnerTitle: e.partnerTitle || "",
+    teachingSkill: e.teachingSkill,
+    learningSkill: e.learningSkill,
+    completedSessions: e.completedSessions,
+    totalSessions: e.totalSessions,
+    nextSession: e.nextSession
+  })) : [
   {
     id: 1,
     partnerName: "Sarah Chen",
@@ -101,7 +114,19 @@ const PersonalUserHub = () => {
   }];
 
 
-  const smartMatches = [
+  // ─── Smart Matches from Convex (fallback to mock) ──────────
+  const smartMatches = convexSmartMatches && convexSmartMatches.length > 0 ? convexSmartMatches.map((m) => ({
+    id: m._id,
+    name: m.matchedUserName,
+    avatar: m.matchedUserAvatar || "",
+    avatarAlt: `${m.matchedUserName} avatar`,
+    title: m.matchedUserTitle || "",
+    compatibilityScore: m.compatibilityScore,
+    canTeach: m.matchedUserSkills || [],
+    wantsToLearn: m.matchedUserLearningGoals || [],
+    location: "",
+    rating: 0
+  })) : [
   {
     id: 1,
     name: "David Kim",
@@ -175,7 +200,21 @@ const PersonalUserHub = () => {
   }];
 
 
-  const communityFeed = [
+  // ─── Community Feed from Convex (fallback to mock) ─────────
+  const communityFeed = communityPosts && communityPosts.length > 0 ? communityPosts.map((p) => ({
+    id: p._id,
+    authorName: p.authorName || 'Unknown',
+    authorAvatar: p.authorAvatar || '',
+    authorAvatarAlt: `${p.authorName || 'User'} avatar`,
+    isVerified: false,
+    timeAgo: getTimeAgo(p.createdAt),
+    content: p.content,
+    achievement: p.achievement || null,
+    skillTags: p.skillTags || [],
+    likes: p.likes ?? 0,
+    comments: p.commentsCount ?? 0,
+    isLiked: p.isLiked ?? false
+  })) : [
   {
     id: 1,
     authorName: "Emma Wilson",
@@ -232,7 +271,22 @@ const PersonalUserHub = () => {
   }];
 
 
-  const marketplaceOfferings = [
+  // ─── Marketplace Offerings from Convex (fallback to mock) ──
+  const marketplaceOfferings = featuredOfferings && featuredOfferings.length > 0 ? featuredOfferings.map((o) => ({
+    id: o._id,
+    title: o.title,
+    coverImage: o.coverImage || '',
+    coverImageAlt: `${o.title} cover`,
+    instructorName: o.instructorName || 'Unknown',
+    instructorAvatar: o.instructorAvatar || '',
+    instructorAvatarAlt: `${o.instructorName || 'Instructor'} avatar`,
+    description: o.description,
+    duration: o.duration,
+    students: o.studentsCount ?? 0,
+    level: o.level,
+    rating: o.rating ?? 0,
+    price: o.price ?? 0
+  })) : [
   {
     id: 1,
     title: "Advanced React Patterns",
@@ -430,7 +484,8 @@ const PersonalUserHub = () => {
                 size="default"
                 iconName="RefreshCw"
                 iconPosition="left"
-                className="hidden sm:flex">
+                className="hidden sm:flex"
+                onClick={() => refreshMatches()}>
                 
                 Refresh
               </Button>

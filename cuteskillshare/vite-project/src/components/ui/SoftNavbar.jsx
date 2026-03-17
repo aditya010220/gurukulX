@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../AppIcon';
 import Input from './Input';
 
@@ -6,11 +8,26 @@ import Input from './Input';
 const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const searchRef = useRef(null);
   const profileRef = useRef(null);
+
+  // ─── Convex search query ────────────────────────────────────
+  const convexSearchResults = useQuery(
+    api.users.search,
+    searchQuery?.length > 1 ? { searchQuery } : 'skip'
+  );
+
+  // Map Convex results to display format
+  const searchResults = convexSearchResults
+    ? convexSearchResults.map((u) => ({
+        type: 'user',
+        title: u.name,
+        subtitle: u.title || u.skills?.join(', ') || '',
+        avatar: u.avatar || '',
+      }))
+    : [];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -26,28 +43,14 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Show searching indicator while Convex query loads
   useEffect(() => {
-    if (searchQuery?.length > 2) {
-      setIsSearching(true);
-      const timer = setTimeout(() => {
-        const mockResults = [
-          { type: 'skill', title: 'React Development', subtitle: 'Web Development', skillLevel: 'Advanced' },
-          { type: 'skill', title: 'UI/UX Design', subtitle: 'Design', skillLevel: 'Intermediate' },
-          { type: 'user', title: 'Sarah Chen', subtitle: 'Full Stack Developer', avatar: '/assets/images/no_image.png' },
-          { type: 'user', title: 'Michael Torres', subtitle: 'Product Designer', avatar: '/assets/images/no_image.png' },
-        ]?.filter(item => 
-          item?.title?.toLowerCase()?.includes(searchQuery?.toLowerCase()) ||
-          item?.subtitle?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-        );
-        setSearchResults(mockResults);
-        setIsSearching(false);
-      }, 300);
-      return () => clearTimeout(timer);
+    if (searchQuery?.length > 1) {
+      setIsSearching(convexSearchResults === undefined);
     } else {
-      setSearchResults([]);
       setIsSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, convexSearchResults]);
 
   const handleSearchFocus = () => {
     setSearchExpanded(true);

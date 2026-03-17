@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 
-const transactions = [
+const fallbackTransactions = [
   { id: 1, type: 'earned', label: 'Completed exchange with Sarah Chen', amount: 50, date: 'Feb 12, 2026', icon: 'ArrowDownLeft' },
   { id: 2, type: 'spent', label: 'Enrolled in Advanced React Patterns', amount: 450, date: 'Feb 10, 2026', icon: 'ArrowUpRight' },
   { id: 3, type: 'earned', label: 'Session with Michael Torres', amount: 50, date: 'Feb 9, 2026', icon: 'ArrowDownLeft' },
@@ -13,17 +15,42 @@ const transactions = [
   { id: 8, type: 'earned', label: 'Completed exchange with Lisa Anderson', amount: 50, date: 'Feb 3, 2026', icon: 'ArrowDownLeft' },
 ];
 
+const formatDate = (ts) => {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
 const WalletPage = () => {
   const [tab, setTab] = useState('all');
 
-  const totalEarned = transactions.filter((t) => t.type === 'earned').reduce((sum, t) => sum + t.amount, 0);
-  const totalSpent = transactions.filter((t) => t.type === 'spent').reduce((sum, t) => sum + t.amount, 0);
-  const balance = 1250;
-
-  const filtered = transactions.filter((t) => {
-    if (tab === 'all') return true;
-    return t.type === tab;
+  // ─── Convex queries ─────────────────────────────────────────
+  const convexStats = useQuery(api.wallet.getStats);
+  const convexTransactions = useQuery(api.wallet.listTransactions, {
+    filterType: tab !== 'all' ? tab : undefined,
   });
+
+  const transactions = convexTransactions && convexTransactions.length > 0
+    ? convexTransactions.map((t) => ({
+        id: t._id,
+        type: t.type,
+        label: t.label,
+        amount: t.amount,
+        date: formatDate(t.createdAt),
+        icon: t.icon || (t.type === 'earned' ? 'ArrowDownLeft' : 'ArrowUpRight'),
+      }))
+    : fallbackTransactions;
+
+  const balance = convexStats?.balance ?? 1250;
+  const totalEarned = convexStats?.totalEarned ?? fallbackTransactions.filter((t) => t.type === 'earned').reduce((sum, t) => sum + t.amount, 0);
+  const totalSpent = convexStats?.totalSpent ?? fallbackTransactions.filter((t) => t.type === 'spent').reduce((sum, t) => sum + t.amount, 0);
+
+  // Client-side filtering only for fallback data
+  const filtered = convexTransactions && convexTransactions.length > 0
+    ? transactions
+    : transactions.filter((t) => {
+        if (tab === 'all') return true;
+        return t.type === tab;
+      });
 
   return (
     <div className="overflow-x-hidden">

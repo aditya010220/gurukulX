@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -10,21 +12,37 @@ const quickPrompts = [
   { icon: 'BookOpen', label: 'Recommend resources for React' },
 ];
 
-const initialMessages = [
-  {
-    id: 1,
-    role: 'assistant',
-    content:
-      "Hi there! 👋 I'm your AI Learning Assistant. I can help you plan your learning journey, suggest skill matches, and provide personalized recommendations. What would you like to explore today?",
-    timestamp: '10:00 AM',
-  },
-];
+const welcomeMessage = {
+  id: 'welcome',
+  role: 'assistant',
+  content:
+    "Hi there! 👋 I'm your AI Learning Assistant. I can help you plan your learning journey, suggest skill matches, and provide personalized recommendations. What would you like to explore today?",
+  timestamp: '10:00 AM',
+};
+
+const formatTimestamp = (ts) => {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
 const AIAssistantPage = () => {
-  const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // ─── Convex queries & mutations ─────────────────────────────
+  const chatHistory = useQuery(api.chat.getHistory);
+  const sendMessage = useMutation(api.chat.sendMessage);
+
+  // Map Convex history to display format, with welcome fallback
+  const messages = chatHistory && chatHistory.length > 0
+    ? chatHistory.map((m) => ({
+        id: m._id,
+        role: m.role,
+        content: m.content,
+        timestamp: formatTimestamp(m.createdAt),
+      }))
+    : [welcomeMessage];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,44 +52,20 @@ const AIAssistantPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     const content = text || input;
     if (!content.trim()) return;
 
-    const userMessage = {
-      id: Date.now(),
-      role: 'user',
-      content,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponses = {
-        'Generate a 7-day learning plan':
-          "Here's your personalized 7-day plan:\n\n📅 **Day 1-2:** Review React fundamentals & hooks\n📅 **Day 3-4:** Deep dive into state management patterns\n📅 **Day 5:** Practice with a mini project\n📅 **Day 6:** Explore testing with Jest & RTL\n📅 **Day 7:** Build a complete feature end-to-end\n\nWould you like me to add more detail to any day?",
-        'Suggest skills to learn next':
-          "Based on your current skills in React and JavaScript, I recommend:\n\n1. **TypeScript** – Strongly typed JS, very in-demand\n2. **Next.js** – Full-stack React framework\n3. **GraphQL** – Modern API query language\n4. **System Design** – Architecture patterns\n\nWant me to create a learning path for any of these?",
-        'Analyze my learning progress':
-          "📊 **Your Learning Summary:**\n\n✅ 24 exchanges completed\n🔥 12-day streak active\n⭐ 4.8 average rating from partners\n💰 1,250 SkillCoins earned\n\nYou're in the top 15% of active learners! Keep up the great momentum.",
-        'Recommend resources for React':
-          "Here are my top picks for React:\n\n📚 **Official React Docs** – Updated with latest patterns\n🎥 **React Patterns Course** – Advanced component design\n💻 **Build a Dashboard** – Hands-on project\n📖 **Testing React Apps** – Jest & React Testing Library\n\nWant me to add any of these to your learning queue?",
-      };
-
-      const response = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content:
-          aiResponses[content] ||
-          `Great question! Let me think about "${content}"...\n\nBased on your profile and learning history, I'd suggest focusing on building practical projects that combine your existing skills. Would you like me to create a specific action plan?`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, response]);
+    try {
+      await sendMessage({ content });
+    } catch (err) {
+      console.error('Send failed:', err);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e) => {

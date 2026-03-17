@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 
-const swapsData = [
+const fallbackSwaps = [
   {
     id: 1,
     partner: 'Sarah Chen',
@@ -80,15 +82,36 @@ const statusIcons = {
 const MySwapsPage = () => {
   const [tab, setTab] = useState('all');
 
-  const filtered = swapsData.filter((s) => {
-    if (tab === 'all') return true;
-    return s.status === tab;
-  });
+  // ─── Convex queries ─────────────────────────────────────────
+  const convexExchanges = useQuery(api.exchanges.listByUser, { statusFilter: tab });
+  const convexStats = useQuery(api.exchanges.getStats);
 
-  const stats = {
-    active: swapsData.filter((s) => s.status === 'active').length,
-    completed: swapsData.filter((s) => s.status === 'completed').length,
-    pending: swapsData.filter((s) => s.status === 'pending').length,
+  const swapsData = convexExchanges && convexExchanges.length > 0
+    ? convexExchanges.map((e) => ({
+        id: e._id,
+        partner: e.partnerName,
+        avatar: e.partnerAvatar || '',
+        teaching: e.teachingSkill,
+        learning: e.learningSkill,
+        status: e.status,
+        completedSessions: e.completedSessions,
+        totalSessions: e.totalSessions,
+        nextSession: e.nextSession || null,
+        rating: e.rating ?? null,
+      }))
+    : fallbackSwaps;
+
+  const filtered = convexExchanges && convexExchanges.length > 0
+    ? swapsData
+    : swapsData.filter((s) => {
+        if (tab === 'all') return true;
+        return s.status === tab;
+      });
+
+  const stats = convexStats || {
+    active: fallbackSwaps.filter((s) => s.status === 'active').length,
+    completed: fallbackSwaps.filter((s) => s.status === 'completed').length,
+    pending: fallbackSwaps.filter((s) => s.status === 'pending').length,
   };
 
   return (

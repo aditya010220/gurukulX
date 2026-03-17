@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import Icon from './AppIcon';
 import Input from './ui/Input';
 import Select from './ui/Select';
@@ -36,7 +38,9 @@ const availabilityOptions = [
 ];
 
 const NewExchangeModal = ({ isOpen, onClose }) => {
+  const createRequest = useMutation(api.exchangeRequests.create);
   const [step, setStep] = useState(1); // 1 = form, 2 = success
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     offerSkill: '',
     offerCategory: '',
@@ -52,10 +56,27 @@ const NewExchangeModal = ({ isOpen, onClose }) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate submission
-    setStep(2);
+    setIsSubmitting(true);
+    try {
+      await createRequest({
+        offerSkill: formData.offerSkill,
+        offerCategory: formData.offerCategory,
+        offerLevel: formData.offerLevel,
+        learnSkill: formData.learnSkill,
+        learnCategory: formData.learnCategory,
+        learnLevel: formData.learnLevel,
+        availability: formData.availability,
+        description: formData.description,
+      });
+      setStep(2);
+    } catch (error) {
+      console.error('Failed to create exchange request:', error);
+      alert('Failed to submit exchange request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -205,8 +226,8 @@ const NewExchangeModal = ({ isOpen, onClose }) => {
                 />
               </div>
 
-              <Button type="submit" variant="default" fullWidth size="lg" iconName="Send" iconPosition="left">
-                Submit Exchange Request
+              <Button type="submit" variant="default" fullWidth size="lg" iconName="Send" iconPosition="left" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Exchange Request'}
               </Button>
             </form>
           </>

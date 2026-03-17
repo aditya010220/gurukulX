@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
-const groupsData = [
+const fallbackGroups = [
   {
     id: 1,
     name: 'React Developers',
@@ -81,19 +83,52 @@ const groupsData = [
 const GroupsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState('all');
-  const [groups, setGroups] = useState(groupsData);
 
-  const toggleJoin = (id) => {
-    setGroups((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, isJoined: !g.isJoined } : g))
-    );
+  // ─── Convex queries & mutations ─────────────────────────────
+  const convexGroups = useQuery(api.groups.list, {
+    search: searchQuery || undefined,
+  });
+  const joinGroup = useMutation(api.groups.join);
+  const leaveGroup = useMutation(api.groups.leave);
+
+  const groups = convexGroups && convexGroups.length > 0
+    ? convexGroups.map((g) => ({
+        id: g._id,
+        groupId: g._id,
+        name: g.name,
+        description: g.description,
+        members: g.memberCount ?? 0,
+        category: g.category,
+        icon: g.icon || 'Users',
+        color: g.color || 'bg-primary/20',
+        isJoined: g.isJoined ?? false,
+        lastActive: '',
+        posts: 0,
+      }))
+    : fallbackGroups;
+
+  const toggleJoin = async (id) => {
+    const group = groups.find((g) => g.id === id);
+    if (group?.groupId) {
+      try {
+        if (group.isJoined) {
+          await leaveGroup({ groupId: group.groupId });
+        } else {
+          await joinGroup({ groupId: group.groupId });
+        }
+      } catch (err) {
+        console.error('Join/Leave failed:', err);
+      }
+    }
   };
 
   const filtered = groups.filter((g) => {
-    const matchesSearch = searchQuery
-      ? g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.category.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+    const matchesSearch = convexGroups && convexGroups.length > 0
+      ? true // server already filtered
+      : searchQuery
+        ? g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          g.category.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
     const matchesTab =
       tab === 'all' ? true : tab === 'joined' ? g.isJoined : !g.isJoined;
     return matchesSearch && matchesTab;

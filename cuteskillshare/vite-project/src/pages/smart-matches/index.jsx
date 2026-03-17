@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
-const matchesData = [
+const fallbackMatches = [
   {
     id: 1,
     name: 'David Kim',
@@ -81,6 +83,50 @@ const matchesData = [
 const SmartMatchesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
+
+  // ─── Convex queries & mutations ─────────────────────────────
+  const convexMatches = useQuery(api.smartMatches.getForUser, {
+    filter: filter !== 'all' ? filter : undefined,
+  });
+  const connectMatch = useMutation(api.smartMatches.connect);
+  const dismissMatch = useMutation(api.smartMatches.dismiss);
+  const refreshMatches = useMutation(api.smartMatches.refresh);
+
+  const matchesData = convexMatches && convexMatches.length > 0
+    ? convexMatches.map((m) => ({
+        id: m._id,
+        matchId: m._id,
+        name: m.matchedUserName,
+        avatar: m.matchedUserAvatar || '',
+        title: m.matchedUserTitle || '',
+        compatibilityScore: m.compatibilityScore,
+        canTeach: m.matchedUserSkills || [],
+        wantsToLearn: m.matchedUserLearningGoals || [],
+        location: '',
+        rating: 0,
+        reviews: 0,
+      }))
+    : fallbackMatches;
+
+  const handleConnect = async (match) => {
+    if (match.matchId) {
+      try {
+        await connectMatch({ matchId: match.matchId });
+      } catch (err) {
+        console.error('Connect failed:', err);
+      }
+    }
+  };
+
+  const handleDismiss = async (match) => {
+    if (match.matchId) {
+      try {
+        await dismissMatch({ matchId: match.matchId });
+      } catch (err) {
+        console.error('Dismiss failed:', err);
+      }
+    }
+  };
 
   const filtered = matchesData.filter((m) => {
     if (searchQuery) {
@@ -214,9 +260,16 @@ const SmartMatchesPage = () => {
                   <span className="text-sm font-semibold text-foreground">{match.rating}</span>
                   <span className="text-xs text-muted-foreground">({match.reviews})</span>
                 </div>
-                <Button variant="default" size="sm" iconName="MessageCircle" iconPosition="left">
-                  Connect
-                </Button>
+                <div className="flex gap-2">
+                  {match.matchId && (
+                    <Button variant="ghost" size="sm" iconName="X" iconPosition="left" onClick={() => handleDismiss(match)}>
+                      Dismiss
+                    </Button>
+                  )}
+                  <Button variant="default" size="sm" iconName="MessageCircle" iconPosition="left" onClick={() => handleConnect(match)}>
+                    Connect
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

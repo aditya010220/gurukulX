@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
 
 const CommunityFeedCard = ({ post, onLike, onComment, onShare }) => {
+  const likeMutation = useMutation(api.posts.like);
   const [isLiked, setIsLiked] = React.useState(post?.isLiked || false);
   const [likeCount, setLikeCount] = React.useState(post?.likes);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    // Optimistic update
+    const newLiked = !isLiked;
+    setIsLiked(newLiked);
+    setLikeCount(newLiked ? likeCount + 1 : likeCount - 1);
     if (onLike) onLike(post);
+
+    // Call Convex mutation if post has a valid Convex ID (string)
+    if (post?.id && typeof post.id === 'string') {
+      try {
+        const result = await likeMutation({ postId: post.id });
+        setIsLiked(result.liked);
+      } catch (error) {
+        console.error('Failed to like post:', error);
+        // Revert optimistic update on failure
+        setIsLiked(!newLiked);
+        setLikeCount(!newLiked ? likeCount + 1 : likeCount - 1);
+      }
+    }
   };
 
   return (

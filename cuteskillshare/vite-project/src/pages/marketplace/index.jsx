@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
-const offeringsData = [
+const fallbackOfferings = [
   {
     id: 1,
     title: 'Advanced React Patterns',
@@ -103,19 +105,61 @@ const MarketplacePage = () => {
   const [category, setCategory] = useState('All');
   const [sortBy, setSortBy] = useState('popular');
 
-  let filtered = offeringsData.filter((o) => {
-    const matchesSearch = searchQuery
-      ? o.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.instructor.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-    const matchesCat = category === 'All' || o.category === category;
-    return matchesSearch && matchesCat;
+  // ─── Convex queries & mutations ─────────────────────────────
+  const convexOfferings = useQuery(api.offerings.list, {
+    search: searchQuery || undefined,
+    category: category !== 'All' ? category : undefined,
+    sortBy,
   });
+  const enrollMutation = useMutation(api.offerings.enroll);
 
-  if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-high') filtered = [...filtered].sort((a, b) => b.price - a.price);
-  if (sortBy === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating);
-  if (sortBy === 'popular') filtered = [...filtered].sort((a, b) => b.students - a.students);
+  const offeringsData = convexOfferings && convexOfferings.length > 0
+    ? convexOfferings.map((o) => ({
+        id: o._id,
+        offeringId: o._id,
+        title: o.title,
+        coverImage: o.coverImage || '',
+        instructor: o.instructorName || 'Unknown',
+        instructorAvatar: o.instructorAvatar || '',
+        description: o.description,
+        duration: o.duration,
+        students: o.studentsCount ?? 0,
+        level: o.level,
+        rating: o.rating ?? 0,
+        price: o.price ?? 0,
+        category: o.category,
+      }))
+    : fallbackOfferings;
+
+  const handleEnroll = async (offering) => {
+    if (offering.offeringId) {
+      try {
+        await enrollMutation({ offeringId: offering.offeringId });
+      } catch (err) {
+        console.error('Enroll failed:', err.message);
+        alert(err.message);
+      }
+    }
+  };
+
+  // Client-side filtering/sorting only needed for fallback data
+  let filtered = convexOfferings && convexOfferings.length > 0
+    ? offeringsData
+    : offeringsData.filter((o) => {
+        const matchesSearch = searchQuery
+          ? o.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            o.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+          : true;
+        const matchesCat = category === 'All' || o.category === category;
+        return matchesSearch && matchesCat;
+      });
+
+  if (!(convexOfferings && convexOfferings.length > 0)) {
+    if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-high') filtered = [...filtered].sort((a, b) => b.price - a.price);
+    if (sortBy === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'popular') filtered = [...filtered].sort((a, b) => b.students - a.students);
+  }
 
   return (
     <div className="overflow-x-hidden">
@@ -223,7 +267,7 @@ const MarketplacePage = () => {
                   <span className="text-lg font-bold text-foreground">{offering.price}</span>
                   <span className="text-xs text-muted-foreground">coins</span>
                 </div>
-                <Button variant="default" size="sm" iconName="ShoppingCart" iconPosition="left">
+                <Button variant="default" size="sm" iconName="ShoppingCart" iconPosition="left" onClick={() => handleEnroll(offering)}>
                   Enroll
                 </Button>
               </div>
