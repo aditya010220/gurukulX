@@ -105,7 +105,7 @@ const NewExchangeModal = ({ isOpen, onClose }) => {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-card rounded-3xl shadow-warm-xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-card rounded-3xl shadow-warm-xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col">
         {/* Close button */}
         <button
           onClick={handleReset}
@@ -136,73 +136,69 @@ const NewExchangeModal = ({ isOpen, onClose }) => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
-              {/* What You Offer */}
-              <div className="bg-success/20 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon name="Gift" size={16} color="var(--color-success-foreground)" />
-                  <p className="text-sm font-semibold text-foreground">What You Offer</p>
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* What You Offer - Left */}
+                <div className="bg-success/20 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon name="Gift" size={16} color="var(--color-success-foreground)" />
+                    <p className="text-sm font-semibold text-foreground">What You Offer</p>
+                  </div>
+                  <Input
+                    label="Skill Name"
+                    placeholder="e.g. React Development"
+                    value={formData.offerSkill}
+                    onChange={(e) => handleChange('offerSkill', e.target.value)}
+                    required
+                  />
+                  <Select
+                    label="Category"
+                    placeholder="Select category"
+                    options={skillCategories}
+                    value={formData.offerCategory}
+                    onChange={(val) => handleChange('offerCategory', val)}
+                    required
+                  />
+                  <Select
+                    label="Your Proficiency"
+                    placeholder="Select level"
+                    options={proficiencyLevels}
+                    value={formData.offerLevel}
+                    onChange={(val) => handleChange('offerLevel', val)}
+                    required
+                  />
                 </div>
-                <Input
-                  label="Skill Name"
-                  placeholder="e.g. React Development"
-                  value={formData.offerSkill}
-                  onChange={(e) => handleChange('offerSkill', e.target.value)}
-                  required
-                />
-                <Select
-                  label="Category"
-                  placeholder="Select category"
-                  options={skillCategories}
-                  value={formData.offerCategory}
-                  onChange={(val) => handleChange('offerCategory', val)}
-                  required
-                />
-                <Select
-                  label="Your Proficiency"
-                  placeholder="Select level"
-                  options={proficiencyLevels}
-                  value={formData.offerLevel}
-                  onChange={(val) => handleChange('offerLevel', val)}
-                  required
-                />
-              </div>
 
-              {/* Swap icon divider */}
-              <div className="flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Icon name="ArrowDownUp" size={20} color="var(--color-primary-foreground)" />
+                {/* What You Want to Learn - Right */}
+                <div className="bg-secondary/30 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon name="GraduationCap" size={16} color="var(--color-secondary-foreground)" />
+                    <p className="text-sm font-semibold text-foreground">What You Want to Learn</p>
+                  </div>
+                  <Input
+                    label="Skill Name"
+                    placeholder="e.g. UI/UX Design"
+                    value={formData.learnSkill}
+                    onChange={(e) => handleChange('learnSkill', e.target.value)}
+                    required
+                  />
+                  <Select
+                    label="Category"
+                    placeholder="Select category"
+                    options={skillCategories}
+                    value={formData.learnCategory}
+                    onChange={(val) => handleChange('learnCategory', val)}
+                    required
+                  />
+                  <Select
+                    label="Desired Level"
+                    placeholder="Select level"
+                    options={proficiencyLevels}
+                    value={formData.learnLevel}
+                    onChange={(val) => handleChange('learnLevel', val)}
+                    required
+                  />
                 </div>
-              </div>
-
-              {/* What You Want to Learn */}
-              <div className="bg-secondary/30 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon name="GraduationCap" size={16} color="var(--color-secondary-foreground)" />
-                  <p className="text-sm font-semibold text-foreground">What You Want to Learn</p>
-                </div>
-                <Input
-                  label="Skill Name"
-                  placeholder="e.g. UI/UX Design"
-                  value={formData.learnSkill}
-                  onChange={(e) => handleChange('learnSkill', e.target.value)}
-                  required
-                />
-                <Select
-                  label="Category"
-                  placeholder="Select category"
-                  options={skillCategories}
-                  value={formData.learnCategory}
-                  onChange={(val) => handleChange('learnCategory', val)}
-                  required
-                />
-                <Select
-                  label="Desired Level"
-                  placeholder="Select level"
-                  options={proficiencyLevels}
-                  value={formData.learnLevel}
-                  onChange={(val) => handleChange('learnLevel', val)}
-                  required
-                />
               </div>
 
               {/* Availability & Description */}

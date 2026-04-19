@@ -13,6 +13,8 @@ import MySwapsPage from './pages/my-swaps';
 import GroupsPage from './pages/groups';
 import MarketplacePage from './pages/marketplace';
 import WalletPage from './pages/wallet';
+import SearchResultsPage from './pages/search';
+import OwnProfilePage from './pages/personal-user-hub/OwnProfilePage';
 
 const Routes = () => {
   return (
@@ -39,6 +41,8 @@ const Routes = () => {
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/profile" element={<OwnProfilePage />} />
         </Route>
         
         {/* Catch all - redirect to auth or 404 */}

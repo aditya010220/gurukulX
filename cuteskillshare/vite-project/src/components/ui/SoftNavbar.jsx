@@ -1,39 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Input from './Input';
 
 
 const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
-  const [searchExpanded, setSearchExpanded] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('q') || '';
+  });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const searchRef = useRef(null);
   const profileRef = useRef(null);
+  const navigate = useNavigate();
 
-  // ─── Convex search query ────────────────────────────────────
-  const convexSearchResults = useQuery(
-    api.users.search,
-    searchQuery?.length > 1 ? { searchQuery } : 'skip'
-  );
-
-  // Map Convex results to display format
-  const searchResults = convexSearchResults
-    ? convexSearchResults.map((u) => ({
-        type: 'user',
-        title: u.name,
-        subtitle: u.title || u.skills?.join(', ') || '',
-        avatar: u.avatar || '',
-      }))
-    : [];
+  const normalizedSearchQuery = searchQuery.trim();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchRef?.current && !searchRef?.current?.contains(event?.target)) {
-        setSearchExpanded(false);
-      }
       if (profileRef?.current && !profileRef?.current?.contains(event?.target)) {
         setShowProfileMenu(false);
       }
@@ -43,27 +26,20 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Show searching indicator while Convex query loads
-  useEffect(() => {
-    if (searchQuery?.length > 1) {
-      setIsSearching(convexSearchResults === undefined);
-    } else {
-      setIsSearching(false);
-    }
-  }, [searchQuery, convexSearchResults]);
-
-  const handleSearchFocus = () => {
-    setSearchExpanded(true);
-  };
-
   const handleSearchChange = (e) => {
     setSearchQuery(e?.target?.value);
   };
 
-  const handleResultClick = (result) => {
-    console.log('Selected:', result);
-    setSearchExpanded(false);
-    setSearchQuery('');
+  const handleSearchSubmit = () => {
+    if (normalizedSearchQuery.length < 2) return;
+    navigate(`/search?q=${encodeURIComponent(normalizedSearchQuery)}`);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
   };
 
   const handleProfileMenuToggle = () => {
@@ -85,26 +61,31 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
           <div className="flex items-center justify-between h-16">
             <div className="navbar-header">
               <div className="navbar-logo">
-                <Icon name="Sprout" size={24} color="var(--color-primary-foreground)" />
+                <img src="/logo.png" alt="SkillGarden logo" className="w-10 h-10" />
               </div>
               <span className="font-heading font-semibold text-lg text-foreground hidden sm:block">
                 SkillGarden
               </span>
             </div>
 
-            <div className="flex items-center gap-4 flex-1 max-w-2xl mx-4" ref={searchRef}>
+            <div className="flex items-center gap-4 flex-1 max-w-2xl mx-4">
               <div className="relative w-full">
                 <Input
                   type="search"
                   placeholder="Search skills or users..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  onFocus={handleSearchFocus}
-                  className="w-full"
+                  onKeyDown={handleSearchKeyDown}
+                  className="w-full navbar-search-input"
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <button
+                  type="button"
+                  onClick={handleSearchSubmit}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  aria-label="Search"
+                >
                   <Icon name="Search" size={20} color="var(--color-muted-foreground)" />
-                </div>
+                </button>
               </div>
             </div>
 
@@ -181,58 +162,6 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
           </div>
         </div>
       </nav>
-      {searchExpanded && searchQuery?.length > 0 && (
-        <div className="fixed inset-0 z-[200] pt-16">
-          <div className="absolute inset-0 bg-background" onClick={() => setSearchExpanded(false)} />
-          <div className="relative max-w-2xl mx-auto mt-2 px-4">
-            <div className="bg-card rounded-2xl shadow-warm-xl overflow-hidden animate-slide-down">
-              {isSearching ? (
-                <div className="p-8 text-center">
-                  <div className="inline-block animate-spin">
-                    <Icon name="Loader2" size={32} color="var(--color-primary)" />
-                  </div>
-                  <p className="mt-4 text-muted-foreground">Searching...</p>
-                </div>
-              ) : searchResults?.length > 0 ? (
-                <div className="max-h-[480px] overflow-y-auto scrollbar-warm">
-                  {searchResults?.map((result, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleResultClick(result)}
-                      className="w-full flex items-center gap-4 p-4 hover:bg-muted transition-smooth text-left border-b border-border last:border-b-0"
-                    >
-                      {result?.type === 'user' ? (
-                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                          <Icon name="User" size={24} color="var(--color-primary-foreground)" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                          <Icon name="BookOpen" size={24} color="var(--color-secondary-foreground)" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{result?.title}</p>
-                        <p className="text-sm text-muted-foreground truncate">{result?.subtitle}</p>
-                      </div>
-                      {result?.skillLevel && (
-                        <span className="px-3 py-1 bg-accent rounded-full text-xs font-medium text-accent-foreground flex-shrink-0">
-                          {result?.skillLevel}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center">
-                  <Icon name="Search" size={48} color="var(--color-muted-foreground)" className="mx-auto mb-4" />
-                  <p className="text-muted-foreground">No results found for "{searchQuery}"</p>
-                  <p className="text-sm text-muted-foreground mt-2">Try searching for skills or users</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

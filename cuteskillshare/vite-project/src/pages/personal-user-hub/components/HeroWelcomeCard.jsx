@@ -6,12 +6,12 @@ const HeroWelcomeCard = ({ userName, skillCoins, currentStreak, totalExchanges }
   const greeting = currentHour < 12 ? 'Good Morning' : currentHour < 18 ? 'Good Afternoon' : 'Good Evening';
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-primary via-secondary to-accent rounded-3xl p-6 md:p-8 lg:p-10 shadow-warm-lg">
+    <div className="relative overflow-hidden bg-primary rounded-3xl p-6 md:p-8 lg:p-10 shadow-warm-lg">
       <div className="relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
             <p className="text-sm md:text-base text-primary-foreground/80 caption mb-2">
-              {greeting}, {userName}! 🌱
+              {greeting}, {userName}! 🤓
             </p>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-heading font-semibold text-primary-foreground mb-4">
               Your Learning Garden is Growing

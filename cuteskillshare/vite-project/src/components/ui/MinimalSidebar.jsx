@@ -89,7 +89,7 @@ const MinimalSidebar = ({ onCollapseChange }) => {
                 "flex items-center gap-3 py-2.5 rounded-full text-sm font-medium transition-all duration-300 w-full",
                 isCollapsed ? "px-3 justify-center" : "px-4",
                 active
-                  ? "bg-primary/10 text-primary font-bold"
+                  ? "bg-primary/80 text-primary-foreground font-bold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 hoveredItem === item.label && !active && !isCollapsed && "translate-x-1"
               );
@@ -123,7 +123,7 @@ const MinimalSidebar = ({ onCollapseChange }) => {
                   <Icon 
                     name={item.icon} 
                     size={18} 
-                    color={active ? 'var(--color-primary)' : 'currentColor'} 
+                    color={active ? 'var(--color-accent-foreground)' : 'currentColor'} 
                   />
                   {!isCollapsed && <span>{item.label}</span>}
                 </Link>
@@ -147,7 +147,7 @@ const MinimalSidebar = ({ onCollapseChange }) => {
                   "flex items-center gap-3 py-2.5 rounded-full text-sm font-medium transition-all duration-300",
                   isCollapsed ? "px-3 justify-center" : "px-4",
                   active
-                    ? "bg-primary/10 text-primary font-bold"
+                    ? "bg-primary/80 text-primary-foreground font-bold"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   hoveredItem === item.label && !active && !isCollapsed && "translate-x-1"
                 )}
@@ -155,7 +155,7 @@ const MinimalSidebar = ({ onCollapseChange }) => {
                 <Icon 
                   name={item.icon} 
                   size={18} 
-                  color={active ? 'var(--color-primary)' : 'currentColor'} 
+                  color={active ? 'var(--color-accent-foreground)' : 'currentColor'} 
                 />
                 {!isCollapsed && <span>{item.label}</span>}
               </Link>

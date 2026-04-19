@@ -10,7 +10,7 @@ import OngoingExchangeCard from './components/OngoingExchangeCard';
 import SmartMatchCard from './components/SmartMatchCard';
 import AIAssistantBlock from './components/AIAssistantBlock';
 import CommunityFeedCard from './components/CommunityFeedCard';
-import MarketplacePreviewCard from './components/MarketplacePreviewCard';
+import MarketplacePreviewCard from './components/MarketPlacePreviewCard';
 import { getTimeAgo } from '../../utils/getTimeAgo';
 
 import Button from '../../components/ui/Button';

@@ -39,7 +39,7 @@ const AppLayout = () => {
       await signOut();
       navigate('/auth');
     } else if (action === 'profile') {
-      navigate('/');
+      navigate('/profile');
     } else if (action === 'settings') {
       navigate('/settings');
     }

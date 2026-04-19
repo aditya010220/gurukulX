@@ -22,3 +22,14 @@ body::-webkit-scrollbar,
   font-family: inherit;
   margin: unset;
 }
+
+.navbar-search-input,
+.navbar-search-input:focus,
+.navbar-search-input:focus-visible,
+.navbar-search-input:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--color-border) !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
