@@ -37,7 +37,7 @@ const CulturalBackground = () => {
         <div className="mb-8 relative">
           <div className="w-80 h-80 rounded-full overflow-hidden cultural-shadow-moderate">
             <Image
-              src="public/login.png"
+              src="/login.png"
               alt="Traditional Indian cooking with clay pots and spices"
               className="w-full h-full object-cover"
             />
