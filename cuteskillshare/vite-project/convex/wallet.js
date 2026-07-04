@@ -80,6 +80,35 @@ export const listTransactions = query({
   },
 });
 
+// ─── getReferralStats ──────────────────────────────────────────
+export const getReferralStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+
+    const transactions = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const referralTx = transactions.filter(
+      (t) => t.type === "earned" && t.label.startsWith("Referral Reward:")
+    );
+    const totalEarned = referralTx.reduce((sum, t) => sum + t.amount, 0);
+
+    return {
+      totalEarned,
+      referralCount: referralTx.length,
+      history: referralTx.map((t) => ({
+        id: t._id,
+        name: t.label.replace("Referral Reward: ", ""),
+        amount: t.amount,
+        createdAt: t.createdAt,
+      })),
+    };
+  },
+});
+
 // ─── addCoins ──────────────────────────────────────────────────
 // Internal: credit coins to user + log transaction
 export const addCoins = mutation({

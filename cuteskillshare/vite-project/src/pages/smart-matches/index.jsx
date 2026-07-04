@@ -88,7 +88,7 @@ const SmartMatchesPage = () => {
   const convexMatches = useQuery(api.smartMatches.getForUser, {
     filter: filter !== 'all' ? filter : undefined,
   });
-  const connectMatch = useMutation(api.smartMatches.connect);
+  const sendRequest = useMutation(api.connections.sendRequest);
   const dismissMatch = useMutation(api.smartMatches.dismiss);
   const refreshMatches = useMutation(api.smartMatches.refresh);
 
@@ -96,6 +96,7 @@ const SmartMatchesPage = () => {
     ? convexMatches.map((m) => ({
         id: m._id,
         matchId: m._id,
+        matchedUserId: m.matchedUserId,
         name: m.matchedUserName,
         avatar: m.matchedUserAvatar || '',
         title: m.matchedUserTitle || '',
@@ -103,18 +104,24 @@ const SmartMatchesPage = () => {
         canTeach: m.matchedUserSkills || [],
         wantsToLearn: m.matchedUserLearningGoals || [],
         location: '',
-        rating: 0,
-        reviews: 0,
+        rating: 4.8,
+        reviews: 12,
       }))
     : fallbackMatches;
 
   const handleConnect = async (match) => {
-    if (match.matchId) {
-      try {
-        await connectMatch({ matchId: match.matchId });
-      } catch (err) {
-        console.error('Connect failed:', err);
-      }
+    const targetUserId = match.matchedUserId || match.id;
+    if (!targetUserId) return;
+
+    try {
+      await sendRequest({
+        receiverId: targetUserId,
+        message: "Hi! I would like to connect with you and exchange skills. Would you like to learn together?",
+      });
+      alert("Connection request sent!");
+    } catch (err) {
+      console.error('Connect failed:', err);
+      alert(err.message || "Failed to send connection request");
     }
   };
 

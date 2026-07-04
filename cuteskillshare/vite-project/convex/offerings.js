@@ -62,14 +62,54 @@ export const list = query({
       offerings.sort((a, b) => b.rating - a.rating);
     }
 
-    // Enrich with instructor data
+    // Enrich with instructor data and enrollment/booking status
+    const identity = await ctx.auth.getUserIdentity();
+    let currentUser = null;
+    if (identity) {
+      currentUser = await ctx.db
+        .query("users")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+        .unique();
+    }
+
+    let userEnrollments = [];
+    let userBookings = [];
+    let userInstructingBookings = [];
+    if (currentUser) {
+      userEnrollments = await ctx.db
+        .query("enrollments")
+        .withIndex("by_user", (q) => q.eq("userId", currentUser._id))
+        .collect();
+      userBookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_student", (q) => q.eq("studentId", currentUser._id))
+        .collect();
+      userInstructingBookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_mentor", (q) => q.eq("mentorId", currentUser._id))
+        .collect();
+    }
+
     const enriched = await Promise.all(
       offerings.map(async (o) => {
         const instructor = await ctx.db.get(o.instructorId);
+        const isEnrolled = userEnrollments.some(
+          (e) => e.offeringId.toString() === o._id.toString()
+        );
+        
+        const booking = userBookings.find(
+          (b) => b.courseId.toString() === o._id.toString()
+        ) || userInstructingBookings.find(
+          (b) => b.courseId.toString() === o._id.toString()
+        );
+
         return {
           ...o,
           instructorName: instructor?.name || "Unknown",
           instructorAvatar: instructor?.avatar || "",
+          isEnrolled,
+          isBooked: !!booking,
+          bookingSessionId: booking?.sessionId || null,
         };
       })
     );
@@ -227,5 +267,101 @@ export const enroll = mutation({
     }
 
     return { success: true };
+  },
+});
+
+// ─── book ──────────────────────────────────────────────────────
+// Atomic: check balance → deduct coins → create booking → create session → create notification → log transaction
+export const book = mutation({
+  args: { offeringId: v.id("marketplaceOfferings") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const offering = await ctx.db.get(args.offeringId);
+
+    if (!offering) throw new Error("Offering not found");
+
+    // Check already booked
+    const existingBookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_student", (q) => q.eq("studentId", user._id))
+      .collect();
+
+    const alreadyBooked = existingBookings.some(
+      (b) => b.courseId.toString() === args.offeringId.toString()
+    );
+
+    if (alreadyBooked) throw new Error("Already booked");
+
+    // Check balance
+    if (user.skillCoins < offering.price) {
+      throw new Error("Insufficient SkillCoins");
+    }
+
+    // Deduct coins from user
+    await ctx.db.patch(user._id, {
+      skillCoins: user.skillCoins - offering.price,
+    });
+
+    // Log transaction
+    await ctx.db.insert("transactions", {
+      userId: user._id,
+      type: "spent",
+      label: `Booked: ${offering.title}`,
+      amount: offering.price,
+      icon: "Calendar",
+      createdAt: Date.now(),
+    });
+
+    // Generate unique sessionId
+    const sessionId = `session_${user._id.toString().substring(0, 8)}_${offering._id.toString().substring(0, 8)}_${Date.now()}`;
+
+    // Create booking
+    const bookingId = await ctx.db.insert("bookings", {
+      studentId: user._id,
+      mentorId: offering.instructorId,
+      courseId: args.offeringId,
+      sessionId,
+      bookedAt: Date.now(),
+      status: "confirmed",
+      skillCoinsSpent: offering.price,
+    });
+
+    // Create session
+    await ctx.db.insert("sessions", {
+      sessionId,
+      participants: [user._id, offering.instructorId],
+      bookingId,
+      callStatus: "active",
+      createdAt: Date.now(),
+    });
+
+    // Create Booking Confirmed Notification for Mentor
+    await ctx.db.insert("notifications", {
+      receiverId: offering.instructorId,
+      senderId: user._id,
+      type: "Booking Confirmed",
+      title: "New Session Booked",
+      message: `${user.name} has booked a session for your course: ${offering.title}`,
+      isRead: false,
+      createdAt: Date.now(),
+    });
+
+    // Credit instructor
+    const instructor = await ctx.db.get(offering.instructorId);
+    if (instructor) {
+      await ctx.db.patch(offering.instructorId, {
+        skillCoins: instructor.skillCoins + offering.price,
+      });
+      await ctx.db.insert("transactions", {
+        userId: offering.instructorId,
+        type: "earned",
+        label: `Session booked: ${offering.title}`,
+        amount: offering.price,
+        icon: "CalendarCheck",
+        createdAt: Date.now(),
+      });
+    }
+
+    return { success: true, sessionId };
   },
 });

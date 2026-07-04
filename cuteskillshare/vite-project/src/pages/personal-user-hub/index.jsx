@@ -78,8 +78,8 @@ const PersonalUserHub = () => {
   })) : [
   {
     id: 1,
-    partnerName: "Sarah Chen",
-    partnerAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1d92ac120-1763293804988.png",
+    partnerName: "Astha Singh",
+    partnerAvatar: "https://i.pinimg.com/736x/34/fc/e9/34fce9b56c7b4781d101d7e073b5ddb3.jpg",
     partnerAvatarAlt: "Professional headshot of Asian woman with long black hair wearing white blouse and warm smile",
     partnerTitle: "Full Stack Developer",
     teachingSkill: "React Development",
@@ -90,8 +90,8 @@ const PersonalUserHub = () => {
   },
   {
     id: 2,
-    partnerName: "Michael Torres",
-    partnerAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c30629a8-1763296377538.png",
+    partnerName: "Athreya",
+    partnerAvatar: "https://i.pinimg.com/736x/2e/90/b6/2e90b63ad738da3d1153c3b2ee00bbf4.jpg",
     partnerAvatarAlt: "Professional headshot of Hispanic man with short black hair in navy suit and confident expression",
     partnerTitle: "Product Designer",
     teachingSkill: "JavaScript Fundamentals",
@@ -102,8 +102,8 @@ const PersonalUserHub = () => {
   },
   {
     id: 3,
-    partnerName: "Emma Wilson",
-    partnerAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_117e4bd25-1763295402445.png",
+    partnerName: "Manish Verma",
+    partnerAvatar: "https://i.pinimg.com/vwebpf/1200x/62/16/9f/62169fb4f961f71ff689f1d6a215dc6f.webp",
     partnerAvatarAlt: "Professional headshot of Caucasian woman with blonde hair in gray blazer with friendly demeanor",
     partnerTitle: "Data Scientist",
     teachingSkill: "Web Development Basics",
@@ -129,8 +129,8 @@ const PersonalUserHub = () => {
   })) : [
   {
     id: 1,
-    name: "David Kim",
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c4856e22-1763294353311.png",
+    name: "Veer Chaudhary",
+    avatar: "https://i.pinimg.com/736x/17/94/30/179430bbe08926ede2e09a7771622a06.jpg",
     avatarAlt: "Professional headshot of Asian man with glasses wearing blue shirt and welcoming smile",
     title: "Mobile App Developer",
     compatibilityScore: 95,
@@ -141,38 +141,38 @@ const PersonalUserHub = () => {
   },
   {
     id: 2,
-    name: "Lisa Anderson",
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_149978121-1763293908052.png",
-    avatarAlt: "Professional headshot of African American woman with curly hair in red top with bright smile",
+    name: "Ananya Iyer",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200",
+    avatarAlt: "Professional headshot of Indian woman with a warm smile",
     title: "UX Researcher",
     compatibilityScore: 92,
     canTeach: ["User Research", "Figma", "Design Thinking", "Prototyping"],
     wantsToLearn: ["JavaScript", "React", "Frontend Development"],
-    location: "New York, NY",
+    location: "Mumbai, India",
     rating: 4.8
   },
   {
     id: 3,
-    name: "James Martinez",
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_13790d79a-1763295637209.png",
-    avatarAlt: "Professional headshot of Hispanic man with beard wearing green shirt and professional demeanor",
+    name: "Rohan Sharma",
+    avatar: "https://i.pinimg.com/736x/9c/18/6d/9c186d97a529fb5d001df98846c45425.jpg",
+    avatarAlt: "Professional headshot of Indian man with glasses",
     title: "DevOps Engineer",
     compatibilityScore: 88,
-    canTeach: ["Docker", "Kubernetes", "AWS", "CI/CD"],
+    canTeach: ["Docker", "Kubernetes", "AWS", "CI/CD","Jenkins"],
     wantsToLearn: ["React", "Node.js", "Full Stack Development"],
-    location: "Austin, TX",
+    location: "Delhi, India",
     rating: 4.7
   },
   {
     id: 4,
     name: "Priya Patel",
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_192d20565-1763300854621.png",
-    avatarAlt: "Professional headshot of Indian woman with long dark hair wearing purple blouse with confident expression",
+    avatar: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&q=80&w=200",
+    avatarAlt: "Professional headshot of Indian woman with glasses wearing professional blouse",
     title: "Machine Learning Engineer",
     compatibilityScore: 85,
     canTeach: ["Python", "TensorFlow", "Machine Learning", "Data Science"],
     wantsToLearn: ["Web Development", "React", "JavaScript"],
-    location: "Seattle, WA",
+    location: "Bangalore, India",
     rating: 4.9
   }];
 
@@ -217,8 +217,8 @@ const PersonalUserHub = () => {
   })) : [
   {
     id: 1,
-    authorName: "Emma Wilson",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_117e4bd25-1763295402445.png",
+    authorName: "Yash Pratap Singh",
+    authorAvatar: "https://i.pinimg.com/736x/11/a6/05/11a605716a44cd54805db220e577629e.jpg",
     authorAvatarAlt: "Professional headshot of Caucasian woman with blonde hair in gray blazer with friendly demeanor",
     isVerified: true,
     timeAgo: "2 hours ago",
@@ -231,9 +231,9 @@ const PersonalUserHub = () => {
   },
   {
     id: 2,
-    authorName: "Michael Torres",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c30629a8-1763296377538.png",
-    authorAvatarAlt: "Professional headshot of Hispanic man with short black hair in navy suit and confident expression",
+    authorName: "Shreya Gupta",
+    authorAvatar: "https://i.pinimg.com/736x/77/c3/6b/77c36b6eea6a5df964a9f3b150163bc9.jpg",
+    authorAvatarAlt: "Professional headshot of Indian woman with short black hair in navy suit and confident expression",
     isVerified: true,
     timeAgo: "5 hours ago",
     content: "Huge shoutout to Sarah for teaching me advanced React patterns! The component composition techniques we covered today were mind-blowing. Can\'t wait for our next session.",
@@ -244,8 +244,8 @@ const PersonalUserHub = () => {
   },
   {
     id: 3,
-    authorName: "Lisa Anderson",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_149978121-1763293908052.png",
+    authorName: "Abhishek Verma",
+    authorAvatar: "https://i.pinimg.com/1200x/d0/96/30/d09630a68ff721c6fff999f138d33d33.jpg",
     authorAvatarAlt: "Professional headshot of African American woman with curly hair in red top with bright smile",
     isVerified: false,
     timeAgo: "1 day ago",
@@ -258,8 +258,8 @@ const PersonalUserHub = () => {
   },
   {
     id: 4,
-    authorName: "James Martinez",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_13790d79a-1763295637209.png",
+    authorName: "Riya Malhotra",
+    authorAvatar: "https://i.pinimg.com/736x/27/71/d1/2771d1549c2b569dc5acd3d51e28c1d8.jpg",
     authorAvatarAlt: "Professional headshot of Hispanic man with beard wearing green shirt and professional demeanor",
     isVerified: true,
     timeAgo: "1 day ago",
@@ -292,30 +292,30 @@ const PersonalUserHub = () => {
     title: "Advanced React Patterns",
     coverImage: "https://images.unsplash.com/photo-1542546068979-b6affb46ea8f",
     coverImageAlt: "Modern workspace with laptop displaying colorful React code on screen with coffee cup and notebook",
-    instructorName: "Sarah Chen",
-    instructorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1d92ac120-1763293804988.png",
+    instructorName: "Manisha",
+    instructorAvatar: "https://i.pinimg.com/736x/58/79/a7/5879a7c00934f9865728909942f170a5.jpg",
     instructorAvatarAlt: "Professional headshot of Asian woman with long black hair wearing white blouse and warm smile",
     description: "Master advanced React patterns including compound components, render props, and custom hooks. Perfect for developers looking to level up their React skills.",
     duration: "8 weeks",
     students: 124,
     level: "Advanced",
     rating: 4.9,
-    price: 450
+    price: 12
   },
   {
     id: 2,
     title: "UI/UX Design Fundamentals",
     coverImage: "https://images.unsplash.com/photo-1675317120753-ce28b951e9e8",
     coverImageAlt: "Designer workspace with Figma interface open showing colorful UI mockups and design tools",
-    instructorName: "Michael Torres",
-    instructorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c30629a8-1763296377538.png",
+    instructorName: "Aarav",
+    instructorAvatar: "https://i.pinimg.com/1200x/09/7c/14/097c1445d3282217eb7d57acb44f2166.jpg",
     instructorAvatarAlt: "Professional headshot of Hispanic man with short black hair in navy suit and confident expression",
     description: "Learn the principles of user-centered design, from wireframing to prototyping. Includes hands-on projects and real-world case studies.",
     duration: "6 weeks",
     students: 89,
     level: "Beginner",
     rating: 4.8,
-    price: 350
+    price: 8
   },
   {
     id: 3,
@@ -330,22 +330,22 @@ const PersonalUserHub = () => {
     students: 156,
     level: "Intermediate",
     rating: 4.9,
-    price: 500
+    price: 15
   },
   {
     id: 4,
     title: "Mobile App Development",
     coverImage: "https://images.unsplash.com/photo-1595846870485-df6f64d1e510",
     coverImageAlt: "Smartphone displaying mobile app interface with developer tools and code editor in background",
-    instructorName: "David Kim",
-    instructorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c4856e22-1763294353311.png",
+    instructorName: "Arpit Patel",
+    instructorAvatar: "https://i.pinimg.com/1200x/ee/ce/00/eece00bb1f5841986ab10ecb3e954897.jpg",
     instructorAvatarAlt: "Professional headshot of Asian man with glasses wearing blue shirt and welcoming smile",
     description: "Build cross-platform mobile apps with React Native. Learn navigation, state management, and deployment to app stores.",
     duration: "12 weeks",
     students: 98,
     level: "Intermediate",
     rating: 4.7,
-    price: 550
+    price: 10
   }];
 
 
@@ -370,6 +370,19 @@ const PersonalUserHub = () => {
 
   const handleViewDetails = (exchange) => {
     console.log('View details:', exchange);
+    setModalContent({
+      type: 'exchange-details',
+      partnerName: exchange?.partnerName,
+      partnerAvatar: exchange?.partnerAvatar,
+      partnerAvatarAlt: exchange?.partnerAvatarAlt,
+      partnerTitle: exchange?.partnerTitle,
+      teachingSkill: exchange?.teachingSkill,
+      learningSkill: exchange?.learningSkill,
+      completedSessions: exchange?.completedSessions,
+      totalSessions: exchange?.totalSessions,
+      nextSession: exchange?.nextSession
+    });
+    setModalOpen(true);
   };
 
   const handleConnectClick = (match) => {
@@ -457,15 +470,15 @@ const PersonalUserHub = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {ongoingExchanges?.map((exchange) =>
-              <OngoingExchangeCard
-                key={exchange?.id}
-                exchange={exchange}
-                onScheduleClick={handleScheduleClick}
-                onViewDetails={handleViewDetails} />
-
-              )}
+            <div className="flex overflow-x-auto pb-4 gap-4 md:gap-6 scrollbar-warm snap-x snap-mandatory scroll-smooth -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+              {ongoingExchanges?.map((exchange) => (
+                <div key={exchange?.id} className="w-[280px] sm:w-[320px] md:w-[350px] snap-start flex-shrink-0 hover:scale-[1.01] transition-all duration-300">
+                  <OngoingExchangeCard
+                    exchange={exchange}
+                    onScheduleClick={handleScheduleClick}
+                    onViewDetails={handleViewDetails} />
+                </div>
+              ))}
             </div>
           </section>
 
@@ -491,14 +504,14 @@ const PersonalUserHub = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {smartMatches?.map((match) =>
-              <SmartMatchCard
-                key={match?.id}
-                match={match}
-                onConnectClick={handleConnectClick} />
-
-              )}
+            <div className="flex overflow-x-auto pb-4 gap-4 md:gap-6 scrollbar-warm snap-x snap-mandatory scroll-smooth -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+              {smartMatches?.map((match) => (
+                <div key={match?.id} className="w-[280px] sm:w-[320px] md:w-[350px] snap-start flex-shrink-0 hover:scale-[1.01] transition-all duration-300">
+                  <SmartMatchCard
+                    match={match}
+                    onConnectClick={handleConnectClick} />
+                </div>
+              ))}
             </div>
           </section>
 
@@ -566,15 +579,15 @@ const PersonalUserHub = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {marketplaceOfferings?.map((offering) =>
-              <MarketplacePreviewCard
-                key={offering?.id}
-                offering={offering}
-                onBookClick={handleBookClick}
-                onViewProfile={handleViewProfile} />
-
-              )}
+            <div className="flex overflow-x-auto pb-4 gap-4 md:gap-6 scrollbar-warm snap-x snap-mandatory scroll-smooth -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+              {marketplaceOfferings?.map((offering) => (
+                <div key={offering?.id} className="w-[280px] sm:w-[320px] md:w-[350px] snap-start flex-shrink-0 hover:scale-[1.01] transition-all duration-300">
+                  <MarketplacePreviewCard
+                    offering={offering}
+                    onBookClick={handleBookClick}
+                    onViewProfile={handleViewProfile} />
+                </div>
+              ))}
             </div>
           </section>
       <ContextualModal

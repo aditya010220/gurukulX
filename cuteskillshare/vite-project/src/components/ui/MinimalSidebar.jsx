@@ -16,7 +16,7 @@ const menuItems = [
 ];
 
 const bottomItems = [
-  { icon: 'Settings', label: 'Settings', href: '/settings' },
+  { icon: 'Users', label: 'Co-Learner', href: '/messaging' },
   { icon: 'LogOut', label: 'Logout', href: '/logout' },
 ];
 

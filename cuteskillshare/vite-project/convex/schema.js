@@ -14,6 +14,7 @@ export default defineSchema({
     title: v.string(),
     location: v.string(),
     avatar: v.string(),
+    referredBy: v.optional(v.string()),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_name", ["name"]),
@@ -130,6 +131,20 @@ export default defineSchema({
   })
     .index("by_user", ["userId"]),
 
+  bookings: defineTable({
+    studentId: v.id("users"),
+    mentorId: v.id("users"),
+    courseId: v.id("marketplaceOfferings"),
+    sessionId: v.string(),
+    bookedAt: v.number(),
+    status: v.string(), // "confirmed" | "cancelled"
+    skillCoinsSpent: v.number(),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_mentor", ["mentorId"])
+    .index("by_course", ["courseId"])
+    .index("by_session", ["sessionId"]),
+
   chatMessages: defineTable({
     userId: v.id("users"),
     role: v.string(), // "user" | "assistant"
@@ -137,4 +152,36 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_user", ["userId"]),
+
+  connections: defineTable({
+    requesterId: v.id("users"),
+    receiverId: v.id("users"),
+    status: v.string(), // "Pending" | "Accepted" | "Rejected"
+    createdAt: v.number(),
+  })
+    .index("by_requester", ["requesterId"])
+    .index("by_receiver", ["receiverId"])
+    .index("by_status", ["status"])
+    .index("by_requester_receiver", ["requesterId", "receiverId"]),
+
+  sessions: defineTable({
+    sessionId: v.string(),
+    participants: v.array(v.id("users")),
+    bookingId: v.optional(v.id("bookings")),
+    callStatus: v.string(), // "active" | "ended"
+    createdAt: v.number(),
+  })
+    .index("by_session", ["sessionId"]),
+
+  notifications: defineTable({
+    receiverId: v.id("users"),
+    senderId: v.id("users"),
+    type: v.string(), // "Connection Request" | "Connection Accepted" | "Connection Rejected" | "Session Started" | "Booking Confirmed" | "New Message"
+    title: v.string(),
+    message: v.string(),
+    isRead: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_receiver", ["receiverId"])
+    .index("by_receiver_unread", ["receiverId", "isRead"]),
 });

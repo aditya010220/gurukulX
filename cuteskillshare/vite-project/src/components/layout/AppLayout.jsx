@@ -6,9 +6,12 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import SoftNavbar from '../ui/SoftNavbar';
 import MinimalSidebar from '../ui/MinimalSidebar';
+import ContextualModal from '../ui/ContextualModal';
 
 const AppLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
   const { user } = useUser();
   const { signOut } = useClerk();
   const navigate = useNavigate();
@@ -17,14 +20,23 @@ const AppLayout = () => {
   const getOrCreate = useMutation(api.users.getOrCreate);
   const convexUser = useQuery(api.users.getCurrent);
   const balance = useQuery(api.wallet.getBalance);
+  const referralStats = useQuery(api.wallet.getReferralStats);
 
   // Sync Clerk user to Convex on mount/change
   useEffect(() => {
     if (user) {
+      const referredBy = localStorage.getItem('referredBy') || undefined;
       getOrCreate({
         name: user.fullName || user.firstName || 'Guest User',
         email: user.primaryEmailAddress?.emailAddress || '',
-      }).catch(console.error);
+        referredBy,
+      })
+        .then(() => {
+          if (referredBy) {
+            localStorage.removeItem('referredBy');
+          }
+        })
+        .catch(console.error);
     }
   }, [user?.id]);
 
@@ -40,8 +52,15 @@ const AppLayout = () => {
       navigate('/auth');
     } else if (action === 'profile') {
       navigate('/profile');
-    } else if (action === 'settings') {
-      navigate('/settings');
+    } else if (action === 'share') {
+      setModalContent({
+        type: 'share',
+        userId: convexUser?._id,
+        referralStats: referralStats || { totalEarned: 0, referralCount: 0, history: [] },
+      });
+      setModalOpen(true);
+    } else if (action === 'courses') {
+      navigate('/courses');
     }
   };
 
@@ -62,6 +81,12 @@ const AppLayout = () => {
           <Outlet />
         </div>
       </main>
+      <ContextualModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        content={modalContent}
+        theme="warm"
+      />
     </div>
   );
 };

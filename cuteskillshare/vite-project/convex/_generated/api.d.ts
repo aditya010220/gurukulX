@@ -9,12 +9,16 @@
  */
 
 import type * as chat from "../chat.js";
+import type * as connections from "../connections.js";
 import type * as exchangeRequests from "../exchangeRequests.js";
 import type * as exchanges from "../exchanges.js";
 import type * as groups from "../groups.js";
+import type * as notifications from "../notifications.js";
 import type * as offerings from "../offerings.js";
 import type * as posts from "../posts.js";
+import type * as sessions from "../sessions.js";
 import type * as smartMatches from "../smartMatches.js";
+import type * as stream from "../stream.js";
 import type * as users from "../users.js";
 import type * as wallet from "../wallet.js";
 
@@ -26,12 +30,16 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
+  connections: typeof connections;
   exchangeRequests: typeof exchangeRequests;
   exchanges: typeof exchanges;
   groups: typeof groups;
+  notifications: typeof notifications;
   offerings: typeof offerings;
   posts: typeof posts;
+  sessions: typeof sessions;
   smartMatches: typeof smartMatches;
+  stream: typeof stream;
   users: typeof users;
   wallet: typeof wallet;
 }>;

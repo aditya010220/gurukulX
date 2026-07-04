@@ -17,7 +17,7 @@ const fallbackOfferings = [
     students: 124,
     level: 'Advanced',
     rating: 4.9,
-    price: 450,
+    price: 12,
     category: 'Web Development',
   },
   {
@@ -31,7 +31,7 @@ const fallbackOfferings = [
     students: 89,
     level: 'Beginner',
     rating: 4.8,
-    price: 350,
+    price: 8,
     category: 'Design',
   },
   {
@@ -45,7 +45,7 @@ const fallbackOfferings = [
     students: 156,
     level: 'Intermediate',
     rating: 4.9,
-    price: 500,
+    price: 15,
     category: 'Data Science',
   },
   {
@@ -59,7 +59,7 @@ const fallbackOfferings = [
     students: 98,
     level: 'Intermediate',
     rating: 4.7,
-    price: 550,
+    price: 10,
     category: 'Mobile Development',
   },
   {
@@ -73,7 +73,7 @@ const fallbackOfferings = [
     students: 72,
     level: 'Intermediate',
     rating: 4.7,
-    price: 480,
+    price: 14,
     category: 'DevOps',
   },
   {
@@ -87,7 +87,7 @@ const fallbackOfferings = [
     students: 65,
     level: 'Beginner',
     rating: 4.8,
-    price: 400,
+    price: 6,
     category: 'Design',
   },
 ];
@@ -115,20 +115,20 @@ const MarketplacePage = () => {
 
   const offeringsData = convexOfferings && convexOfferings.length > 0
     ? convexOfferings.map((o) => ({
-        id: o._id,
-        offeringId: o._id,
-        title: o.title,
-        coverImage: o.coverImage || '',
-        instructor: o.instructorName || 'Unknown',
-        instructorAvatar: o.instructorAvatar || '',
-        description: o.description,
-        duration: o.duration,
-        students: o.studentsCount ?? 0,
-        level: o.level,
-        rating: o.rating ?? 0,
-        price: o.price ?? 0,
-        category: o.category,
-      }))
+      id: o._id,
+      offeringId: o._id,
+      title: o.title,
+      coverImage: o.coverImage || '',
+      instructor: o.instructorName || 'Unknown',
+      instructorAvatar: o.instructorAvatar || '',
+      description: o.description,
+      duration: o.duration,
+      students: o.studentsCount ?? 0,
+      level: o.level,
+      rating: o.rating ?? 0,
+      price: o.price ?? 0,
+      category: o.category,
+    }))
     : fallbackOfferings;
 
   const handleEnroll = async (offering) => {
@@ -146,13 +146,13 @@ const MarketplacePage = () => {
   let filtered = convexOfferings && convexOfferings.length > 0
     ? offeringsData
     : offeringsData.filter((o) => {
-        const matchesSearch = searchQuery
-          ? o.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            o.instructor.toLowerCase().includes(searchQuery.toLowerCase())
-          : true;
-        const matchesCat = category === 'All' || o.category === category;
-        return matchesSearch && matchesCat;
-      });
+      const matchesSearch = searchQuery
+        ? o.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+      const matchesCat = category === 'All' || o.category === category;
+      return matchesSearch && matchesCat;
+    });
 
   if (!(convexOfferings && convexOfferings.length > 0)) {
     if (sortBy === 'price-low') filtered = [...filtered].sort((a, b) => a.price - b.price);
@@ -199,11 +199,10 @@ const MarketplacePage = () => {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                category === cat
+              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${category === cat
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-border'
-              }`}
+                }`}
             >
               {cat}
             </button>

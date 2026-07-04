@@ -21,6 +21,7 @@ export const getOrCreate = mutation({
   args: {
     name: v.string(),
     email: v.string(),
+    referredBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -53,6 +54,7 @@ export const getOrCreate = mutation({
       title: "",
       location: "",
       avatar: identity.pictureUrl || "",
+      referredBy: args.referredBy,
     });
 
     // Insert welcome bonus transaction
@@ -64,6 +66,90 @@ export const getOrCreate = mutation({
       icon: "Gift",
       createdAt: Date.now(),
     });
+
+    // If referredBy is set, let's credit the referrer!
+    if (args.referredBy) {
+      let referrer = null;
+      try {
+        const referrerId = ctx.db.normalizeId("users", args.referredBy);
+        if (referrerId) {
+          referrer = await ctx.db.get(referrerId);
+        }
+      } catch (e) {
+        console.error("Invalid referrer ID", e);
+      }
+
+      if (referrer) {
+        // Referral bonus: 50 SkillCoins
+        const referralAmount = 50;
+        await ctx.db.patch(referrer._id, {
+          skillCoins: referrer.skillCoins + referralAmount,
+        });
+
+        // Insert referral reward transaction for referrer
+        await ctx.db.insert("transactions", {
+          userId: referrer._id,
+          type: "earned",
+          label: `Referral Reward: ${args.name}`,
+          amount: referralAmount,
+          icon: "UserPlus",
+          createdAt: Date.now(),
+        });
+      }
+    }
+
+    // Auto-seed offerings if none exist
+    const existingOfferings = await ctx.db.query("marketplaceOfferings").take(1);
+    if (existingOfferings.length === 0) {
+      const instructors = await ctx.db.query("users").collect();
+      const instructorId = instructors[0]?._id || userId;
+      
+      const seedData = [
+        {
+          title: 'Advanced React Patterns',
+          coverImage: 'https://images.unsplash.com/photo-1542546068979-b6affb46ea8f',
+          description: 'Master advanced React patterns including compound components, render props, and custom hooks.',
+          duration: '8 weeks',
+          level: 'Advanced',
+          price: 12,
+          category: 'Web Development',
+        },
+        {
+          title: 'UI/UX Design Fundamentals',
+          coverImage: 'https://images.unsplash.com/photo-1675317120753-ce28b951e9e8',
+          description: 'Learn the principles of user-centered design, from wireframing to prototyping.',
+          duration: '6 weeks',
+          level: 'Beginner',
+          price: 8,
+          category: 'Design',
+        },
+        {
+          title: 'Python for Data Science',
+          coverImage: 'https://img.rocket.new/generatedImages/rocket_gen_img_1273044c1-1766319477622.png',
+          description: 'Comprehensive introduction to Python for data analysis, covering pandas, NumPy, and visualization.',
+          duration: '10 weeks',
+          level: 'Intermediate',
+          price: 15,
+          category: 'Data Science',
+        }
+      ];
+
+      for (const item of seedData) {
+        await ctx.db.insert("marketplaceOfferings", {
+          instructorId,
+          title: item.title,
+          description: item.description,
+          coverImage: item.coverImage,
+          duration: item.duration,
+          level: item.level,
+          category: item.category,
+          price: item.price,
+          rating: 4.8,
+          studentsCount: 24,
+          createdAt: Date.now(),
+        });
+      }
+    }
 
     return userId;
   },

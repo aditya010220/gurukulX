@@ -15,6 +15,9 @@ import MarketplacePage from './pages/marketplace';
 import WalletPage from './pages/wallet';
 import SearchResultsPage from './pages/search';
 import OwnProfilePage from './pages/personal-user-hub/OwnProfilePage';
+import CoursesPage from './pages/courses';
+import JoinSessionPage from './pages/session';
+import MessagingPage from './pages/messaging';
 
 const Routes = () => {
   return (
@@ -43,6 +46,9 @@ const Routes = () => {
           <Route path="/wallet" element={<WalletPage />} />
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/profile" element={<OwnProfilePage />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/session/:sessionId" element={<JoinSessionPage />} />
+          <Route path="/messaging" element={<MessagingPage />} />
         </Route>
         
         {/* Catch all - redirect to auth or 404 */}

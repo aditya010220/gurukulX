@@ -1,6 +1,142 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../AppIcon';
 import Button from './Button';
+
+const ShareModalContent = ({ userId, referralStats, onClose }) => {
+  const [copied, setCopied] = useState(false);
+
+  const referralLink = userId
+    ? `${window.location.origin}/?ref=${userId}`
+    : `${window.location.origin}`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'SkillGarden - Peer-to-Peer Skill Exchange',
+          text: 'Join me on SkillGarden to share and learn skills! Use my link to get a welcome bonus of 100 SkillCoins.',
+          url: referralLink,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      handleCopy();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary">
+          <Icon name="Share2" size={32} />
+        </div>
+        <h3 className="text-2xl font-heading font-semibold text-foreground mb-2">
+          Invite Friends, Earn SkillCoins!
+        </h3>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Share your referral link with friends. When they register, you will instantly earn <span className="font-semibold text-foreground">50 SkillCoins</span> and they will get a <span className="font-semibold text-foreground">100 SkillCoins</span> welcome bonus!
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-2xl">
+        <div className="text-center py-2 border-r border-border">
+          <p className="text-2xl font-bold font-mono text-primary">
+            {referralStats?.referralCount || 0}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Friends Referred</p>
+        </div>
+        <div className="text-center py-2">
+          <div className="flex items-center justify-center gap-1">
+            <Icon name="Coins" size={18} color="var(--color-secondary-foreground)" />
+            <span className="text-2xl font-bold font-mono text-secondary-foreground">
+              {referralStats?.totalEarned || 0}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Coins Earned</p>
+        </div>
+      </div>
+
+      {/* Link Input & Buttons */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-foreground block">
+          Your Referral Link
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            readOnly
+            value={referralLink}
+            className="flex-1 bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground select-all focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <Button
+            variant={copied ? "success" : "default"}
+            size="sm"
+            onClick={handleCopy}
+            className="px-4 whitespace-nowrap min-w-[90px]"
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Native share button if supported */}
+      {navigator.share && (
+        <Button variant="outline" fullWidth onClick={handleShare} iconName="Share" iconPosition="left">
+          Share link via...
+        </Button>
+      )}
+
+      {/* Referral History */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-foreground">Referral History</h4>
+        {referralStats?.history && referralStats.history.length > 0 ? (
+          <div className="max-h-40 overflow-y-auto space-y-2 pr-1 scrollbar-warm">
+            {referralStats.history.map((ref) => (
+              <div key={ref.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-xl text-sm border border-border/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                    {ref.name ? ref.name.slice(0, 2).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{ref.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {new Date(ref.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 font-mono font-semibold text-success-foreground">
+                  + {ref.amount} <Icon name="Coins" size={14} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 bg-muted/30 border border-dashed border-border rounded-2xl">
+            <p className="text-sm text-muted-foreground">No referrals yet. Start sharing your link to earn coins!</p>
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2">
+        <Button variant="outline" onClick={onClose} fullWidth>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const ContextualModal = ({ isOpen, onClose, content, theme = 'warm' }) => {
   useEffect(() => {
@@ -88,6 +224,90 @@ const ContextualModal = ({ isOpen, onClose, content, theme = 'warm' }) => {
               </Button>
               <Button variant="default" onClick={() => console.log('Exchange requested')} className="flex-1">
                 Send Request
+              </Button>
+            </div>
+          </div>
+        ); case 'exchange-details':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 pb-4 border-b border-border">
+              <img
+                src={content?.partnerAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"}
+                alt={content?.partnerAvatarAlt || "Partner avatar"}
+                className="w-16 h-16 rounded-2xl object-cover shadow-sm"
+              />
+              <div>
+                <h3 className="text-xl font-heading font-semibold text-foreground mb-1">
+                  {content?.partnerName || 'Exchange Partner'}
+                </h3>
+                <p className="text-sm text-muted-foreground">{content?.partnerTitle || 'Community Member'}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-2xl">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What you are teaching</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Icon name="BookOpen" size={20} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{content?.teachingSkill || 'React Development'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted rounded-2xl">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What you are learning</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary-foreground">
+                    <Icon name="BookOpen" size={20} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{content?.learningSkill || 'UI/UX Design'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-muted rounded-2xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Session Progress</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent-foreground">
+                      <Icon name="Calendar" size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {content?.completedSessions ?? 0} / {content?.totalSessions ?? 10}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Sessions Completed</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted rounded-2xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Next Session Date</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success-foreground">
+                      <Icon name="Clock" size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {content?.nextSession || 'Not scheduled'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Scheduled Time</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                Close
+              </Button>
+              <Button variant="default" onClick={() => { onClose(); console.log('Message partner'); }} className="flex-1">
+                Message Partner
               </Button>
             </div>
           </div>
@@ -222,6 +442,15 @@ const ContextualModal = ({ isOpen, onClose, content, theme = 'warm' }) => {
               Close
             </Button>
           </div>
+        );
+
+      case 'share':
+        return (
+          <ShareModalContent
+            userId={content?.userId}
+            referralStats={content?.referralStats}
+            onClose={onClose}
+          />
         );
 
       default:

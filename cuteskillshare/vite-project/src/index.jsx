@@ -6,6 +6,7 @@ import "./styles/index.css";
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
+import { StreamProvider } from "./components/providers/StreamProvider";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
@@ -26,7 +27,9 @@ const root = createRoot(container);
 root.render(
   <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      <App />
+      <StreamProvider>
+        <App />
+      </StreamProvider>
     </ConvexProviderWithClerk>
   </ClerkProvider>
 );
