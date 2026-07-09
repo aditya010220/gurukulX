@@ -7,8 +7,9 @@ import {
   StreamCall,
   StreamTheme as VideoTheme,
   SpeakerLayout,
-  CallControls,
   CallParticipantsList,
+  useCall,
+  useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import {
   Chat,
@@ -21,6 +22,82 @@ import {
 } from "stream-chat-react";
 import Button from "../../components/ui/Button";
 import Icon from "../../components/AppIcon";
+
+const CustomCallControls = ({ onLeave }) => {
+  const call = useCall();
+  const { useMicrophoneState, useCameraState } = useCallStateHooks();
+  const micState = useMicrophoneState();
+  const camState = useCameraState();
+
+  const isMuted = !micState.isEnabled;
+  const isCamOff = !camState.isEnabled;
+
+  return (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 bg-[#1e1e24]/90 backdrop-blur-md rounded-full border border-neutral-700/40 shadow-2xl">
+      {/* Mic Control Pill */}
+      <div className={`flex items-center rounded-full text-white cursor-pointer transition-all duration-200 ${
+        isMuted ? "bg-red-500/90 hover:bg-red-600" : "bg-[#2d2f31] hover:bg-[#3c4043]"
+      }`}>
+        <button 
+          onClick={() => call?.microphone.toggle()} 
+          className="flex items-center justify-center w-9 h-9 pl-3 pr-1 rounded-l-full text-white"
+          title={isMuted ? "Unmute Mic" : "Mute Mic"}
+        >
+          <Icon name={isMuted ? "MicOff" : "Mic"} size={16} />
+        </button>
+        <div className="w-[1px] h-3.5 bg-white/20"></div>
+        <button className="pl-1 pr-3 py-2 text-white flex items-center justify-center" aria-label="Mic Settings">
+          <Icon name="ChevronUp" size={8} />
+        </button>
+      </div>
+
+      {/* Camera Control Pill */}
+      <div className={`flex items-center rounded-full text-white cursor-pointer transition-all duration-200 ${
+        isCamOff ? "bg-red-500/90 hover:bg-red-600" : "bg-[#2d2f31] hover:bg-[#3c4043]"
+      }`}>
+        <button 
+          onClick={() => call?.camera.toggle()} 
+          className="flex items-center justify-center w-9 h-9 pl-3 pr-1 rounded-l-full text-white"
+          title={isCamOff ? "Turn On Camera" : "Turn Off Camera"}
+        >
+          <Icon name={isCamOff ? "VideoOff" : "Video"} size={16} />
+        </button>
+        <div className="w-[1px] h-3.5 bg-white/20"></div>
+        <button className="pl-1 pr-3 py-2 text-white flex items-center justify-center" aria-label="Camera Settings">
+          <Icon name="ChevronUp" size={8} />
+        </button>
+      </div>
+
+      {/* Emoji/Reaction */}
+      <button className="flex items-center justify-center w-9 h-9 bg-[#2d2f31] hover:bg-[#3c4043] rounded-full text-white transition-colors duration-200" title="Send Reaction">
+        <Icon name="Smile" size={16} />
+      </button>
+
+      {/* Screen Share */}
+      <button 
+        onClick={() => call?.screenShare.toggle()}
+        className="flex items-center justify-center w-9 h-9 bg-[#2d2f31] hover:bg-[#3c4043] rounded-full text-white transition-colors duration-200" 
+        title="Present Screen"
+      >
+        <Icon name="MonitorUp" size={16} />
+      </button>
+
+      {/* Recording */}
+      <button className="flex items-center justify-center w-9 h-9 bg-[#2d2f31] hover:bg-[#3c4043] rounded-full text-white transition-colors duration-200" title="Record Session">
+        <Icon name="CircleDot" size={16} />
+      </button>
+
+      {/* Leave Call (Red) */}
+      <button 
+        onClick={onLeave} 
+        className="flex items-center justify-center w-9 h-9 bg-[#ea4335] hover:bg-[#d93025] rounded-full text-white transition-colors duration-200" 
+        title="End Call"
+      >
+        <Icon name="PhoneOff" size={16} />
+      </button>
+    </div>
+  );
+};
 
 const JoinSessionPage = () => {
   const { sessionId } = useParams();
@@ -145,12 +222,10 @@ const JoinSessionPage = () => {
           {call && (
             <StreamCall call={call}>
               <VideoTheme>
-                <div className="w-full h-full flex flex-col justify-between">
+                <div className="w-full h-full flex flex-col justify-between relative">
                   <div className="flex-1 relative rounded-2xl overflow-hidden min-h-[300px]">
                     <SpeakerLayout />
-                  </div>
-                  <div className="py-4 flex justify-center">
-                    <CallControls onLeave={() => navigate(-1)} />
+                    <CustomCallControls onLeave={() => navigate(-1)} />
                   </div>
                 </div>
               </VideoTheme>

@@ -6,7 +6,7 @@ const ProgressBar = ({ width = 80, label = '' }) => (
   <div className="flex flex-col gap-1">
     <p className="text-xs font-medium text-muted-foreground">{label}</p>
     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-      <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full" style={{ width: `${width}%` }}></div>
+      <div className="h-full bg-black rounded-full" style={{ width: `${width}%` }}></div>
     </div>
   </div>
 );
@@ -28,6 +28,9 @@ const OwnProfileCard = ({
   },
   skills = ['React', 'Node.js', 'TypeScript', 'Tailwind CSS', 'MongoDB'],
   interests = ['AI', 'Web Development', 'UI/UX', 'DevOps', 'Open Source'],
+  github = '',
+  linkedin = '',
+  twitter = '',
   onEditProfile,
   onShareProfile,
 }) => {
@@ -72,7 +75,7 @@ const OwnProfileCard = ({
                 size="sm"
                 className="flex-1"
               >
-                Follow
+                Edit Profile
               </Button>
               <Button
                 onClick={onShareProfile}
@@ -80,7 +83,7 @@ const OwnProfileCard = ({
                 size="sm"
                 className="flex-1"
               >
-                Message
+                Share Profile
               </Button>
             </div>
           </div>
@@ -99,19 +102,52 @@ const OwnProfileCard = ({
               {/* GitHub */}
               <div className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <Icon name="Github" size={20} color="#333333" />
-                <p className="text-sm text-foreground">github</p>
+                {github ? (
+                  <a
+                    href={github.startsWith('http') ? github : `https://github.com/${github}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-primary hover:underline font-medium truncate max-w-[180px]"
+                  >
+                    {github}
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">Not set</span>
+                )}
               </div>
 
               {/* Twitter */}
               <div className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <Icon name="Twitter" size={20} color="#55acee" />
-                <p className="text-sm text-foreground">@username</p>
+                {twitter ? (
+                  <a
+                    href={twitter.startsWith('http') ? twitter : `https://twitter.com/${twitter.replace('@', '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-primary hover:underline font-medium truncate max-w-[180px]"
+                  >
+                    {twitter.startsWith('@') ? twitter : `@${twitter}`}
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">Not set</span>
+                )}
               </div>
 
               {/* LinkedIn */}
               <div className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <Icon name="Linkedin" size={20} color="#0A66C2" />
-                <p className="text-sm text-foreground">linkedin</p>
+                {linkedin ? (
+                  <a
+                    href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-primary hover:underline font-medium truncate max-w-[180px]"
+                  >
+                    {linkedin}
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">Not set</span>
+                )}
               </div>
 
               {/* Email */}
@@ -236,49 +272,6 @@ const OwnProfileCard = ({
               <p className="text-sm text-muted-foreground leading-relaxed">{about}</p>
             </div>
           )}
-
-          {/* Skills & Interests Section */}
-          <div className="space-y-6">
-            {/* Skills */}
-            {skills && skills.length > 0 && (
-              <div className="bg-card rounded-2xl shadow-warm-lg border border-border/50 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Icon name="Sparkles" size={18} color="var(--color-primary)" />
-                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Skills</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-4 py-2 bg-primary/15 text-primary rounded-full text-sm font-medium hover:bg-primary/25 transition-colors cursor-pointer"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Interests */}
-            {interests && interests.length > 0 && (
-              <div className="bg-card rounded-2xl shadow-warm-lg border border-border/50 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Icon name="Heart" size={18} color="var(--color-accent)" />
-                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Interests</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {interests.map((interest, index) => (
-                    <span
-                      key={index}
-                      className="px-4 py-2 bg-secondary/15 text-secondary rounded-full text-sm font-medium hover:bg-secondary/25 transition-colors cursor-pointer"
-                    >
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

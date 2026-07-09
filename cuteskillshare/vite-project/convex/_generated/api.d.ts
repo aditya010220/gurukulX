@@ -19,6 +19,7 @@ import type * as posts from "../posts.js";
 import type * as sessions from "../sessions.js";
 import type * as smartMatches from "../smartMatches.js";
 import type * as stream from "../stream.js";
+import type * as testUtils from "../testUtils.js";
 import type * as users from "../users.js";
 import type * as wallet from "../wallet.js";
 
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   sessions: typeof sessions;
   smartMatches: typeof smartMatches;
   stream: typeof stream;
+  testUtils: typeof testUtils;
   users: typeof users;
   wallet: typeof wallet;
 }>;

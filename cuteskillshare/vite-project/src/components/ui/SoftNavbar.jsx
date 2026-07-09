@@ -13,6 +13,7 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
   });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [respondedStatus, setRespondedStatus] = useState({});
   
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
@@ -175,35 +176,50 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
                                 
                                 {/* Accept/Reject Buttons for Connection Request */}
                                 {n.type === "Connection Request" && (
-                                  <div className="flex gap-2 mt-3">
-                                    <button
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        try {
-                                          await respondConnection({ senderId: n.senderId, accept: true });
-                                          await markRead({ notificationId: n._id });
-                                        } catch (err) {
-                                          console.error("Failed to accept:", err);
-                                        }
-                                      }}
-                                      className="px-3 py-1 bg-success hover:bg-success/90 text-success-foreground rounded-lg text-[11px] font-semibold transition-colors"
-                                    >
-                                      Accept
-                                    </button>
-                                    <button
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        try {
-                                          await respondConnection({ senderId: n.senderId, accept: false });
-                                          await markRead({ notificationId: n._id });
-                                        } catch (err) {
-                                          console.error("Failed to reject:", err);
-                                        }
-                                      }}
-                                      className="px-3 py-1 bg-muted hover:bg-border/60 text-muted-foreground border border-border rounded-lg text-[11px] font-semibold transition-colors"
-                                    >
-                                      Reject
-                                    </button>
+                                  <div className="mt-3">
+                                    {respondedStatus[n._id] ? (
+                                      <p className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 ${
+                                        respondedStatus[n._id] === "accepted"
+                                          ? "bg-success/15 text-success"
+                                          : "bg-error/15 text-error"
+                                      }`}>
+                                        <Icon name={respondedStatus[n._id] === "accepted" ? "CheckCircle" : "XCircle"} size={14} />
+                                        {respondedStatus[n._id] === "accepted" ? "Okay! Request is accepted" : "Okay! Request is rejected"}
+                                      </p>
+                                    ) : (
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            try {
+                                              await respondConnection({ senderId: n.senderId, accept: true });
+                                              await markRead({ notificationId: n._id });
+                                              setRespondedStatus(prev => ({ ...prev, [n._id]: "accepted" }));
+                                            } catch (err) {
+                                              console.error("Failed to accept:", err);
+                                            }
+                                          }}
+                                          className="px-3 py-1 bg-success hover:bg-success/90 text-success-foreground rounded-lg text-[11px] font-semibold transition-colors"
+                                        >
+                                          Accept
+                                        </button>
+                                        <button
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            try {
+                                              await respondConnection({ senderId: n.senderId, accept: false });
+                                              await markRead({ notificationId: n._id });
+                                              setRespondedStatus(prev => ({ ...prev, [n._id]: "rejected" }));
+                                            } catch (err) {
+                                              console.error("Failed to reject:", err);
+                                            }
+                                          }}
+                                          className="px-3 py-1 bg-muted hover:bg-border/60 text-muted-foreground border border-border rounded-lg text-[11px] font-semibold transition-colors"
+                                        >
+                                          Reject
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -230,18 +246,26 @@ const SoftNavbar = ({ user, skillCoins, onProfileClick }) => {
                   className="flex items-center gap-2 p-1 rounded-full hover-lift press-scale focus-ring-lavender"
                   aria-label="User menu"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <Icon name="User" size={20} color="var(--color-primary-foreground)" />
-                  </div>
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-border" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                      <Icon name="User" size={20} color="var(--color-primary-foreground)" />
+                    </div>
+                  )}
                 </button>
 
                 {showProfileMenu && (
                   <div className="absolute right-0 top-full mt-2 w-64 bg-card rounded-2xl shadow-warm-lg animate-slide-down overflow-hidden border border-border">
                     <div className="p-4 border-b border-border">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                          <Icon name="User" size={24} color="var(--color-primary-foreground)" />
-                        </div>
+                        {user?.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full object-cover border border-border" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                            <Icon name="User" size={24} color="var(--color-primary-foreground)" />
+                          </div>
+                        )}
                         <div>
                           <p className="font-medium text-foreground">{user?.name || 'Guest User'}</p>
                           <p className="text-sm text-muted-foreground">{user?.email || 'guest@skillgarden.com'}</p>

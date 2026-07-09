@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -30,9 +31,24 @@ const AIAssistantPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const hasProcessedInitial = useRef(false);
+
   // ─── Convex queries & mutations ─────────────────────────────
   const chatHistory = useQuery(api.chat.getHistory);
-  const sendMessage = useMutation(api.chat.sendMessage);
+  const saveMessageMutation = useMutation(api.chat.saveMessage);
+  const clearHistoryMutation = useMutation(api.chat.clearHistory);
+
+  const handleClearChat = async () => {
+    if (window.confirm("Are you sure you want to clear your chat history?")) {
+      try {
+        await clearHistoryMutation();
+      } catch (err) {
+        console.error("Failed to clear chat:", err);
+      }
+    }
+  };
 
   // Map Convex history to display format, with welcome fallback
   const messages = chatHistory && chatHistory.length > 0
@@ -60,13 +76,85 @@ const AIAssistantPage = () => {
     setIsTyping(true);
 
     try {
-      await sendMessage({ content });
+      // 1. Save user message to Convex database
+      await saveMessageMutation({ role: 'user', content });
+
+      // 2. Prepare conversation context for Gemini API
+      const dbMessages = chatHistory && chatHistory.length > 0 ? chatHistory : [];
+      const rawContents = dbMessages.map((m) => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }],
+      }));
+
+      rawContents.push({
+        role: 'user',
+        parts: [{ text: content }],
+      });
+
+      // Sanitize contents to strictly alternate: user, model, user, model... starting and ending with user
+      const contents = [];
+      let expectedRole = 'user';
+      for (const item of rawContents) {
+        if (item.role === expectedRole) {
+          contents.push(item);
+          expectedRole = expectedRole === 'user' ? 'model' : 'user';
+        } else if (item.role === 'user' && expectedRole === 'model') {
+          if (contents.length > 0) {
+            contents[contents.length - 1].parts[0].text += "\n" + item.parts[0].text;
+          } else {
+            contents.push(item);
+            expectedRole = 'model';
+          }
+        }
+      }
+      while (contents.length > 0 && contents[contents.length - 1].role === 'model') {
+        contents.pop();
+      }
+
+      // 3. Make fetch request to the Gemini API using the working model gemini-3.1-flash-lite
+      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDNWOBFRhnrW6O4-pHGKHJyZ5aReHFHRts";
+      const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+
+      const res = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contents }),
+      });
+
+      const data = await res.json();
+      if (data?.error) {
+        throw new Error(data.error.message || "Gemini API error");
+      }
+      const assistantText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
+        "I'm sorry, I couldn't generate a response. Please try again.";
+
+      // 4. Save the Gemini response to Convex database
+      await saveMessageMutation({ role: 'assistant', content: assistantText });
+
     } catch (err) {
-      console.error('Send failed:', err);
+      console.error('Send/Gemini failed:', err);
+      // Save error fallback message
+      await saveMessageMutation({
+        role: 'assistant',
+        content: `Error generating response: ${err.message || 'An error occurred during Gemini API call.'}`,
+      });
     } finally {
       setIsTyping(false);
     }
   };
+
+  // Process initial query from dashboard navigation
+  useEffect(() => {
+    if (location.state?.initialQuery && !hasProcessedInitial.current) {
+      hasProcessedInitial.current = true;
+      const q = location.state.initialQuery;
+      // Clear location state so refreshes don't re-submit
+      navigate(location.pathname, { replace: true, state: {} });
+      handleSend(q);
+    }
+  }, [location, navigate]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -78,7 +166,7 @@ const AIAssistantPage = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-x-hidden">
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center">
             <Icon name="Bot" size={20} color="var(--color-primary-foreground)" />
@@ -90,6 +178,20 @@ const AIAssistantPage = () => {
             </p>
           </div>
         </div>
+
+        {/* Clear Chat Button */}
+        {chatHistory && chatHistory.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearChat}
+            iconName="Trash2"
+            iconPosition="left"
+            className="border-destructive/30 hover:bg-destructive/10 text-destructive-foreground"
+          >
+            Clear Chat
+          </Button>
+        )}
       </div>
 
       {/* Chat Area */}
@@ -170,21 +272,22 @@ const AIAssistantPage = () => {
         )}
 
         {/* Input Bar */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-2">
-            <Input
+        <div className="p-4 border-t border-border bg-card">
+          <div className="flex items-end gap-3 max-w-4xl mx-auto w-full">
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask me anything about your learning..."
-              className="flex-1"
+              className="flex-1 min-h-[56px] max-h-[160px] py-4 px-4 bg-muted/50 border border-border rounded-2xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none scrollbar-warm"
+              rows={1}
             />
             <Button
               variant="default"
-              size="icon"
               onClick={() => handleSend()}
               disabled={!input.trim() || isTyping}
               iconName="Send"
+              className="h-[56px] w-[56px] rounded-2xl flex items-center justify-center flex-shrink-0"
             />
           </div>
         </div>

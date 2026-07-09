@@ -10,11 +10,15 @@ export default defineSchema({
     learningGoals: v.array(v.string()),
     skillCoins: v.number(),
     currentStreak: v.number(),
+    lastActive: v.optional(v.number()),
     totalExchanges: v.number(),
     title: v.string(),
     location: v.string(),
     avatar: v.string(),
     referredBy: v.optional(v.string()),
+    github: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    twitter: v.optional(v.string()),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_name", ["name"]),

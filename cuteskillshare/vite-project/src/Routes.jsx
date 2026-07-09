@@ -18,6 +18,7 @@ import OwnProfilePage from './pages/personal-user-hub/OwnProfilePage';
 import CoursesPage from './pages/courses';
 import JoinSessionPage from './pages/session';
 import MessagingPage from './pages/messaging';
+import CoLearnerTestPage from './pages/co-learner-test';
 
 const Routes = () => {
   return (
@@ -49,6 +50,7 @@ const Routes = () => {
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/session/:sessionId" element={<JoinSessionPage />} />
           <Route path="/messaging" element={<MessagingPage />} />
+          <Route path="/test-co-learner" element={<CoLearnerTestPage />} />
         </Route>
         
         {/* Catch all - redirect to auth or 404 */}

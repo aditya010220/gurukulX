@@ -44,6 +44,7 @@ const AppLayout = () => {
     name: convexUser?.name || user?.fullName || user?.firstName || 'Guest User',
     email: convexUser?.email || user?.primaryEmailAddress?.emailAddress || 'guest@skillgarden.com',
     skillCoins: balance ?? convexUser?.skillCoins ?? 0,
+    avatar: convexUser?.avatar || user?.imageUrl || '',
   };
 
   const handleProfileClick = async (action) => {

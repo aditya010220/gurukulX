@@ -453,6 +453,59 @@ const ContextualModal = ({ isOpen, onClose, content, theme = 'warm' }) => {
           />
         );
 
+      case 'purchase-confirm':
+        return (
+          <div className="space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto text-secondary-foreground">
+              <Icon name="ShoppingCart" size={32} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-heading font-semibold text-foreground mb-2">
+                Confirm Purchase
+              </h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Are you sure you want to purchase <span className="font-semibold text-foreground">"{content?.title}"</span>?
+              </p>
+            </div>
+
+            <div className="p-4 bg-muted rounded-2xl max-w-sm mx-auto flex items-center justify-between border border-border">
+              <span className="text-sm font-medium text-foreground">Price</span>
+              <div className="flex items-center gap-1">
+                <Icon name="Coins" size={18} color="var(--color-secondary-foreground)" />
+                <span className="text-xl font-bold font-mono text-foreground">{content?.price}</span>
+                <span className="text-xs text-muted-foreground">coins</span>
+              </div>
+            </div>
+
+            {content?.userBalance !== undefined && (
+              <div className="text-xs text-muted-foreground">
+                Your Balance: <span className="font-mono">{content.userBalance}</span> coins
+                {content.userBalance < content.price && (
+                  <p className="text-error mt-1 font-semibold">Insufficient SkillCoins balance.</p>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" onClick={onClose} className="flex-1" disabled={content?.isProcessing}>
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={content?.onConfirm}
+                className="flex-1"
+                disabled={content?.isProcessing || (content?.userBalance !== undefined && content.userBalance < content.price)}
+              >
+                {content?.isProcessing ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
+                ) : (
+                  'Pay with SkillCoins'
+                )}
+              </Button>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="space-y-6">

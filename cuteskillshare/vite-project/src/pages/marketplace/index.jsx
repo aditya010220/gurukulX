@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import ContextualModal from '../../components/ui/ContextualModal';
 
 const fallbackOfferings = [
   {
@@ -104,6 +105,8 @@ const MarketplacePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [sortBy, setSortBy] = useState('popular');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
 
   // ─── Convex queries & mutations ─────────────────────────────
   const convexOfferings = useQuery(api.offerings.list, {
@@ -112,6 +115,7 @@ const MarketplacePage = () => {
     sortBy,
   });
   const enrollMutation = useMutation(api.offerings.enroll);
+  const currentUser = useQuery(api.users.getCurrent);
 
   const offeringsData = convexOfferings && convexOfferings.length > 0
     ? convexOfferings.map((o) => ({
@@ -132,14 +136,33 @@ const MarketplacePage = () => {
     : fallbackOfferings;
 
   const handleEnroll = async (offering) => {
-    if (offering.offeringId) {
-      try {
-        await enrollMutation({ offeringId: offering.offeringId });
-      } catch (err) {
-        console.error('Enroll failed:', err.message);
-        alert(err.message);
-      }
-    }
+    setModalContent({
+      type: 'purchase-confirm',
+      title: offering.title,
+      price: offering.price,
+      userBalance: currentUser?.skillCoins ?? 0,
+      onConfirm: async () => {
+        setModalContent((prev) => ({ ...prev, isProcessing: true }));
+        try {
+          if (offering.offeringId && typeof offering.offeringId === 'string' && offering.offeringId.length > 5) {
+            await enrollMutation({ offeringId: offering.offeringId });
+          }
+          setModalContent({
+            type: 'default',
+            title: 'Enrollment Successful!',
+            description: `You have successfully enrolled in "${offering.title}". You can access this course on your View Courses page.`,
+          });
+        } catch (err) {
+          console.error('Enroll failed:', err.message);
+          setModalContent({
+            type: 'default',
+            title: 'Enrollment Failed',
+            description: err.message || 'An error occurred during enrollment. Please try again.',
+          });
+        }
+      },
+    });
+    setModalOpen(true);
   };
 
   // Client-side filtering/sorting only needed for fallback data
@@ -282,6 +305,13 @@ const MarketplacePage = () => {
           <p className="text-muted-foreground">Try a different search or category</p>
         </div>
       )}
+
+      <ContextualModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        content={modalContent}
+        theme="warm"
+      />
     </div>
   );
 };

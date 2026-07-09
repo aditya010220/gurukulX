@@ -30,6 +30,41 @@ const PersonalUserHub = () => {
   const communityPosts = useQuery(api.posts.list, { limit: 10 });
   const featuredOfferings = useQuery(api.offerings.getFeatured);
   const refreshMatches = useMutation(api.smartMatches.refresh);
+  const bookMutation = useMutation(api.offerings.book);
+
+  const handleBookClick = (offering) => {
+    setModalContent({
+      type: 'purchase-confirm',
+      title: offering.title,
+      price: offering.price,
+      userBalance: userData.skillCoins,
+      onConfirm: async () => {
+        setModalContent((prev) => ({ ...prev, isProcessing: true }));
+        try {
+          if (offering.id && typeof offering.id === 'string' && offering.id.length > 5) {
+            await bookMutation({ offeringId: offering.id });
+          }
+          setModalContent({
+            type: 'default',
+            title: 'Booking Successful!',
+            description: `You have successfully booked "${offering.title}". A calendar session has been created. Check it under 'My Booked Sessions' on the View Courses page.`,
+          });
+        } catch (err) {
+          console.error('Booking failed:', err.message);
+          setModalContent({
+            type: 'default',
+            title: 'Booking Failed',
+            description: err.message || 'An error occurred during booking. Please try again.',
+          });
+        }
+      },
+    });
+    setModalOpen(true);
+  };
+
+  const handleViewProfile = (offering) => {
+    console.log('View profile:', offering);
+  };
 
   const userData = {
     name: convexUser?.name || user?.fullName || user?.firstName || "Guest User",
@@ -427,14 +462,6 @@ const PersonalUserHub = () => {
 
   const handlePostShare = (post) => {
     console.log('Share post:', post);
-  };
-
-  const handleBookClick = (offering) => {
-    console.log('Book offering:', offering);
-  };
-
-  const handleViewProfile = (offering) => {
-    console.log('View profile:', offering);
   };
 
   return (

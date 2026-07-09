@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import ContextualModal from '../../components/ui/ContextualModal';
 
 const levelColors = {
   Beginner: 'bg-success/20 text-success-foreground',
@@ -15,6 +16,8 @@ const CoursesPage = () => {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'enrolled' | 'booked'
   const [processingId, setProcessingId] = useState(null); // id of offering currently processing
   const [notification, setNotification] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
   const navigate = useNavigate();
 
   // Convex Queries & Mutations
@@ -29,47 +32,63 @@ const CoursesPage = () => {
   };
 
   const handleEnroll = async (offering) => {
-    if (processingId) return;
-    
-    // Check balance
-    const userCoins = currentUser?.skillCoins ?? 0;
-    if (userCoins < offering.price) {
-      showNotification('error', 'Insufficient SkillCoins. Earn more by referring friends or completing activities.');
-      return;
-    }
-
-    setProcessingId(offering._id);
-    try {
-      await enrollMutation({ offeringId: offering._id });
-      showNotification('success', `Successfully enrolled in "${offering.title}"!`);
-    } catch (err) {
-      console.error(err);
-      showNotification('error', err.message || 'Payment failed. Transaction rolled back.');
-    } finally {
-      setProcessingId(null);
-    }
+    setModalContent({
+      type: 'purchase-confirm',
+      title: offering.title,
+      price: offering.price,
+      userBalance: currentUser?.skillCoins ?? 0,
+      onConfirm: async () => {
+        setModalContent((prev) => ({ ...prev, isProcessing: true }));
+        try {
+          await enrollMutation({ offeringId: offering._id });
+          setModalContent({
+            type: 'default',
+            title: 'Enrollment Successful!',
+            description: `You have successfully enrolled in "${offering.title}".`,
+          });
+          showNotification('success', `Successfully enrolled in "${offering.title}"!`);
+        } catch (err) {
+          console.error(err);
+          setModalContent({
+            type: 'default',
+            title: 'Enrollment Failed',
+            description: err.message || 'An error occurred during enrollment.',
+          });
+          showNotification('error', err.message || 'Payment failed.');
+        }
+      },
+    });
+    setModalOpen(true);
   };
 
   const handleBook = async (offering) => {
-    if (processingId) return;
-
-    // Check balance
-    const userCoins = currentUser?.skillCoins ?? 0;
-    if (userCoins < offering.price) {
-      showNotification('error', 'Insufficient SkillCoins. Earn more by referring friends or completing activities.');
-      return;
-    }
-
-    setProcessingId(offering._id);
-    try {
-      await bookMutation({ offeringId: offering._id });
-      showNotification('success', `Successfully booked a session for "${offering.title}"!`);
-    } catch (err) {
-      console.error(err);
-      showNotification('error', err.message || 'Booking failed. Transaction rolled back.');
-    } finally {
-      setProcessingId(null);
-    }
+    setModalContent({
+      type: 'purchase-confirm',
+      title: offering.title,
+      price: offering.price,
+      userBalance: currentUser?.skillCoins ?? 0,
+      onConfirm: async () => {
+        setModalContent((prev) => ({ ...prev, isProcessing: true }));
+        try {
+          await bookMutation({ offeringId: offering._id });
+          setModalContent({
+            type: 'default',
+            title: 'Booking Successful!',
+            description: `You have successfully booked "${offering.title}".`,
+          });
+          showNotification('success', `Successfully booked a session for "${offering.title}"!`);
+        } catch (err) {
+          console.error(err);
+          setModalContent({
+            type: 'default',
+            title: 'Booking Failed',
+            description: err.message || 'An error occurred during booking.',
+          });
+          showNotification('error', err.message || 'Booking failed.');
+        }
+      },
+    });
+    setModalOpen(true);
   };
 
   if (!offerings) {
@@ -306,6 +325,13 @@ const CoursesPage = () => {
           )}
         </div>
       )}
+      {/* Contextual Confirmation Modal */}
+      <ContextualModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        content={modalContent}
+        theme="warm"
+      />
     </div>
   );
 };

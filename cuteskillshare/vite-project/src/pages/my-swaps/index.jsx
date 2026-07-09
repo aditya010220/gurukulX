@@ -8,69 +8,17 @@ import Button from '../../components/ui/Button';
 const fallbackSwaps = [
   {
     id: 1,
-    partner: 'Sarah Chen',
+    partner: 'Astha Singh',
     partnerId: '1',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1d92ac120-1763293804988.png',
-    teaching: 'React Development',
-    learning: 'UI/UX Design',
+    avatar: 'https://i.pinimg.com/736x/d6/b4/8b/d6b48b046fecd355c7228313d023121a.jpg',
+    teaching: 'App Development',
+    learning: 'Web Development',
     status: 'active',
     completedSessions: 6,
     totalSessions: 10,
     nextSession: 'Feb 13, 2026 at 3:00 PM',
     rating: 4.9,
-  },
-  {
-    id: 2,
-    partner: 'Michael Torres',
-    partnerId: '2',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1c30629a8-1763296377538.png',
-    teaching: 'JavaScript Fundamentals',
-    learning: 'Motion Graphics',
-    status: 'active',
-    completedSessions: 3,
-    totalSessions: 8,
-    nextSession: 'Feb 14, 2026 at 10:00 AM',
-    rating: 4.7,
-  },
-  {
-    id: 3,
-    partner: 'Emma Wilson',
-    partnerId: '3',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_117e4bd25-1763295402445.png',
-    teaching: 'Web Development Basics',
-    learning: 'Python for Data Analysis',
-    status: 'active',
-    completedSessions: 8,
-    totalSessions: 10,
-    nextSession: 'Feb 15, 2026 at 2:00 PM',
-    rating: 4.8,
-  },
-  {
-    id: 4,
-    partner: 'David Kim',
-    partnerId: '4',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1c4856e22-1763294353311.png',
-    teaching: 'TypeScript',
-    learning: 'Flutter',
-    status: 'completed',
-    completedSessions: 10,
-    totalSessions: 10,
-    nextSession: null,
-    rating: 5.0,
-  },
-  {
-    id: 5,
-    partner: 'Lisa Anderson',
-    partnerId: '5',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_149978121-1763293908052.png',
-    teaching: 'Node.js',
-    learning: 'User Research',
-    status: 'pending',
-    completedSessions: 0,
-    totalSessions: 6,
-    nextSession: 'Awaiting confirmation',
-    rating: null,
-  },
+  }
 ];
 
 const statusColors = {
@@ -90,12 +38,12 @@ const MySwapsPage = () => {
   const navigate = useNavigate();
 
   // ─── Convex queries & mutations ─────────────────────────────
-  const convexExchanges = useQuery(api.exchanges.listByUser, { statusFilter: tab });
-  const convexStats = useQuery(api.exchanges.getStats);
+  const convexExchanges = useQuery(api.exchanges.listByUser, { statusFilter: 'all' });
   const connectedUsers = useQuery(api.connections.listConnected);
   const getOrCreateSession = useMutation(api.sessions.getOrCreateSwapSession);
 
-  const swapsData = convexExchanges && convexExchanges.length > 0
+  // Map database exchanges or fallback data
+  const baseSwaps = convexExchanges && convexExchanges.length > 0
     ? convexExchanges.map((e) => ({
         id: e._id,
         partner: e.partnerName,
@@ -111,17 +59,42 @@ const MySwapsPage = () => {
       }))
     : fallbackSwaps;
 
-  const filtered = convexExchanges && convexExchanges.length > 0
-    ? swapsData
-    : swapsData.filter((s) => {
-        if (tab === 'all') return true;
-        return s.status === tab;
-      });
+  // Track existing partner IDs to prevent duplicate cards
+  const existingPartnerIds = new Set(
+    convexExchanges && convexExchanges.length > 0
+      ? convexExchanges.map(e => e.partnerId.toString())
+      : fallbackSwaps.map(s => s.partnerId)
+  );
 
-  const stats = convexStats || {
-    active: fallbackSwaps.filter((s) => s.status === 'active').length,
-    completed: fallbackSwaps.filter((s) => s.status === 'completed').length,
-    pending: fallbackSwaps.filter((s) => s.status === 'pending').length,
+  // Map remaining connected co-learners as active swaps
+  const connectedSwaps = (connectedUsers || [])
+    .filter(conn => conn?.user && !existingPartnerIds.has(conn.user._id.toString()))
+    .map(conn => ({
+      id: conn._id,
+      partner: conn.user.name,
+      partnerId: conn.user._id,
+      avatar: conn.user.avatar || '',
+      teaching: conn.user.skills && conn.user.skills.length > 0 ? conn.user.skills.join(', ') : 'Skills Exchange',
+      learning: conn.user.learningGoals && conn.user.learningGoals.length > 0 ? conn.user.learningGoals.join(', ') : 'Learning Goals',
+      status: 'active',
+      completedSessions: 0,
+      totalSessions: 10,
+      nextSession: null,
+      rating: null,
+    }));
+
+  // Unified swaps data (database/fallback exchanges + active connected users)
+  const swapsData = [...baseSwaps, ...connectedSwaps];
+
+  // Robust Client-side filtering
+  const filtered = swapsData.filter((s) => {
+    if (tab === 'all') return true;
+    return s.status === tab;
+  });
+
+  const stats = {
+    active: swapsData.filter((s) => s.status === 'active').length,
+    completed: swapsData.filter((s) => s.status === 'completed').length,
   };
 
   const handleJoinSession = async (partnerId) => {
@@ -157,11 +130,10 @@ const MySwapsPage = () => {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         {[
           { label: 'Active', count: stats.active, icon: 'Zap', color: 'bg-success/20' },
           { label: 'Completed', count: stats.completed, icon: 'CheckCircle2', color: 'bg-primary/20' },
-          { label: 'Pending', count: stats.pending, icon: 'Clock', color: 'bg-warning/20' },
         ].map((s) => (
           <div key={s.label} className="bg-card rounded-2xl border border-border p-4 text-center">
             <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center mx-auto mb-2`}>
@@ -175,7 +147,7 @@ const MySwapsPage = () => {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-border pb-3">
-        {['all', 'active', 'completed', 'pending'].map((t) => (
+        {['all', 'active', 'completed'].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -298,70 +270,6 @@ const MySwapsPage = () => {
           </p>
         </div>
       )}
-
-      {/* Connected Co-Learners Section */}
-      <div className="mt-12 mb-6">
-        <h2 className="text-xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
-          <Icon name="Users" size={22} className="text-primary" />
-          Connected Co-Learners
-        </h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          Direct messaging and real-time collaboration with your learning partners
-        </p>
-
-        {connectedUsers && connectedUsers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {connectedUsers.map((conn) => (
-              <div
-                key={conn.user._id}
-                className="bg-card rounded-2xl border border-border p-5 hover:shadow-warm-md transition-all duration-300 flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <img
-                    src={conn.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'}
-                    alt={conn.user.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-border"
-                  />
-                  <div>
-                    <h3 className="font-heading font-semibold text-foreground">{conn.user.name}</h3>
-                    <p className="text-xs text-muted-foreground">{conn.user.title || 'Co-Learner'}</p>
-                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-success font-semibold">
-                      <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                      Connected
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 pt-3 border-t border-border mt-auto">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    iconName="Video"
-                    iconPosition="left"
-                    onClick={() => handleJoinSession(conn.user._id)}
-                  >
-                    Start Session
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    iconName="MessageCircle"
-                    iconPosition="left"
-                    onClick={() => handleMessage(conn.user._id)}
-                  >
-                    Message
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-10 bg-card rounded-2xl border border-border">
-            <Icon name="Users" size={32} className="mx-auto mb-2 opacity-50 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground">No co-learners connected yet</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Explore Smart Matches to build connections.</p>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

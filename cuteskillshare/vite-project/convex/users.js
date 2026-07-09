@@ -33,11 +33,59 @@ export const getOrCreate = mutation({
       .unique();
 
     if (existing) {
-      // Update name/email if changed in Clerk
-      await ctx.db.patch(existing._id, {
+      const now = Date.now();
+      const lastActive = existing.lastActive;
+      
+      let newStreak = existing.currentStreak || 0;
+      let coinsToAdd = 0;
+      let shouldUpdateStreak = false;
+
+      if (!lastActive) {
+        newStreak = 1;
+        coinsToAdd = 10;
+        shouldUpdateStreak = true;
+      } else {
+        const lastActiveDate = new Date(lastActive);
+        const nowDate = new Date(now);
+        
+        const lastActiveDay = new Date(lastActiveDate.getFullYear(), lastActiveDate.getMonth(), lastActiveDate.getDate()).getTime();
+        const nowDay = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()).getTime();
+        
+        const diffDays = Math.round((nowDay - lastActiveDay) / (24 * 60 * 60 * 1000));
+        
+        if (diffDays === 1) {
+          newStreak = (existing.currentStreak || 0) + 1;
+          coinsToAdd = 10;
+          shouldUpdateStreak = true;
+        } else if (diffDays > 1) {
+          newStreak = 1;
+          coinsToAdd = 10;
+          shouldUpdateStreak = true;
+        }
+      }
+
+      const patches = {
         name: args.name,
         email: args.email,
-      });
+      };
+
+      if (shouldUpdateStreak) {
+        patches.currentStreak = newStreak;
+        patches.lastActive = now;
+        patches.skillCoins = (existing.skillCoins || 0) + coinsToAdd;
+
+        // Insert streak bonus transaction
+        await ctx.db.insert("transactions", {
+          userId: existing._id,
+          type: "earned",
+          label: `Daily Streak Day ${newStreak}`,
+          amount: coinsToAdd,
+          icon: "Flame",
+          createdAt: now,
+        });
+      }
+
+      await ctx.db.patch(existing._id, patches);
       return existing._id;
     }
 
@@ -48,8 +96,9 @@ export const getOrCreate = mutation({
       email: args.email,
       skills: [],
       learningGoals: [],
-      skillCoins: 100, // Welcome bonus
-      currentStreak: 0,
+      skillCoins: 110, // 100 Welcome bonus + 10 Daily Streak
+      currentStreak: 1,
+      lastActive: Date.now(),
       totalExchanges: 0,
       title: "",
       location: "",
@@ -64,6 +113,16 @@ export const getOrCreate = mutation({
       label: "Welcome Bonus",
       amount: 100,
       icon: "Gift",
+      createdAt: Date.now(),
+    });
+
+    // Insert daily streak Day 1 bonus transaction
+    await ctx.db.insert("transactions", {
+      userId,
+      type: "earned",
+      label: "Daily Streak Day 1",
+      amount: 10,
+      icon: "Flame",
       createdAt: Date.now(),
     });
 
@@ -190,6 +249,9 @@ export const updateProfile = mutation({
     avatar: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     learningGoals: v.optional(v.array(v.string())),
+    github: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    twitter: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -201,6 +263,9 @@ export const updateProfile = mutation({
     if (args.avatar !== undefined) updates.avatar = args.avatar;
     if (args.skills !== undefined) updates.skills = args.skills;
     if (args.learningGoals !== undefined) updates.learningGoals = args.learningGoals;
+    if (args.github !== undefined) updates.github = args.github;
+    if (args.linkedin !== undefined) updates.linkedin = args.linkedin;
+    if (args.twitter !== undefined) updates.twitter = args.twitter;
 
     if (Object.keys(updates).length > 0) {
       await ctx.db.patch(user._id, updates);
@@ -235,5 +300,49 @@ export const search = query({
         avatar: u.avatar,
         skills: u.skills,
       }));
+  },
+});
+
+export const debugListAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("users").collect();
+  },
+});
+
+export const debugSetupProfiles = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userA = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), "athreya981@gmail.com"))
+      .first();
+
+    const userB = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), "athreya.2327@gmail.com"))
+      .first();
+
+    if (userA) {
+      await ctx.db.patch(userA._id, {
+        name: "Athreya React",
+        title: "Frontend Architect",
+        location: "San Francisco, CA",
+        skills: ["React", "JavaScript", "CSS"],
+        learningGoals: ["Python", "Machine Learning"],
+      });
+    }
+
+    if (userB) {
+      await ctx.db.patch(userB._id, {
+        name: "Athreya Python",
+        title: "ML Researcher",
+        location: "Boston, MA",
+        skills: ["Python", "Machine Learning"],
+        learningGoals: ["React", "JavaScript"],
+      });
+    }
+
+    return { success: true, updatedA: !!userA, updatedB: !!userB };
   },
 });

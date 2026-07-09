@@ -41,3 +41,31 @@ export const getToken = action({
     };
   },
 });
+
+export const getTestToken = action({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const apiKey = process.env.STREAM_API_KEY;
+    const apiSecret = process.env.STREAM_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      throw new Error("Stream environment variables are not configured in Convex dashboard");
+    }
+
+    // Initialize Stream Server Client
+    const client = new StreamClient(apiKey, apiSecret);
+
+    // Generate user token (valid for 24 hours)
+    const token = client.generateUserToken({
+      user_id: args.userId,
+      validity_in_seconds: 86400,
+    });
+
+    return {
+      apiKey,
+      token,
+      userId: args.userId,
+    };
+  },
+});
+

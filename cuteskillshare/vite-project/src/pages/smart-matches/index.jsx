@@ -8,76 +8,16 @@ import Input from '../../components/ui/Input';
 const fallbackMatches = [
   {
     id: 1,
-    name: 'David Kim',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1c4856e22-1763294353311.png',
-    title: 'Mobile App Developer',
+    name: 'Astha Singh',
+    avatar: 'https://i.pinimg.com/736x/d6/b4/8b/d6b48b046fecd355c7228313d023121a.jpg',
+    title: 'App Developer',
     compatibilityScore: 95,
     canTeach: ['Flutter', 'React Native', 'iOS Development'],
     wantsToLearn: ['React', 'TypeScript', 'Web Development'],
-    location: 'San Francisco, CA',
+    location: 'Patna, Bihar',
     rating: 4.9,
     reviews: 24,
-  },
-  {
-    id: 2,
-    name: 'Lisa Anderson',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_149978121-1763293908052.png',
-    title: 'UX Researcher',
-    compatibilityScore: 92,
-    canTeach: ['User Research', 'Figma', 'Design Thinking'],
-    wantsToLearn: ['JavaScript', 'React', 'Frontend Development'],
-    location: 'New York, NY',
-    rating: 4.8,
-    reviews: 18,
-  },
-  {
-    id: 3,
-    name: 'James Martinez',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_13790d79a-1763295637209.png',
-    title: 'DevOps Engineer',
-    compatibilityScore: 88,
-    canTeach: ['Docker', 'Kubernetes', 'AWS'],
-    wantsToLearn: ['React', 'Node.js', 'Full Stack Development'],
-    location: 'Austin, TX',
-    rating: 4.7,
-    reviews: 31,
-  },
-  {
-    id: 4,
-    name: 'Priya Patel',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_192d20565-1763300854621.png',
-    title: 'Machine Learning Engineer',
-    compatibilityScore: 85,
-    canTeach: ['Python', 'TensorFlow', 'Machine Learning'],
-    wantsToLearn: ['Web Development', 'React', 'JavaScript'],
-    location: 'Seattle, WA',
-    rating: 4.9,
-    reviews: 42,
-  },
-  {
-    id: 5,
-    name: 'Sarah Chen',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1d92ac120-1763293804988.png',
-    title: 'Full Stack Developer',
-    compatibilityScore: 82,
-    canTeach: ['React', 'Node.js', 'GraphQL'],
-    wantsToLearn: ['UI/UX Design', 'Figma', 'Motion Graphics'],
-    location: 'Portland, OR',
-    rating: 4.8,
-    reviews: 29,
-  },
-  {
-    id: 6,
-    name: 'Michael Torres',
-    avatar: 'https://img.rocket.new/generatedImages/rocket_gen_img_1c30629a8-1763296377538.png',
-    title: 'Product Designer',
-    compatibilityScore: 79,
-    canTeach: ['Figma', 'Sketch', 'Prototyping'],
-    wantsToLearn: ['JavaScript', 'React', 'Animation'],
-    location: 'Chicago, IL',
-    rating: 4.6,
-    reviews: 15,
-  },
+  }
 ];
 
 const SmartMatchesPage = () => {
@@ -150,13 +90,30 @@ const SmartMatchesPage = () => {
   return (
     <div className="overflow-x-hidden">
       {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-2">
-          Smart Matches
-        </h1>
-        <p className="text-muted-foreground">
-          AI-powered suggestions of peers with complementary skills
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground mb-2">
+            Smart Matches
+          </h1>
+          <p className="text-muted-foreground">
+            AI-powered suggestions of peers with complementary skills
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="default"
+          iconName="RefreshCw"
+          iconPosition="left"
+          onClick={async () => {
+            try {
+              await refreshMatches();
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        >
+          Refresh Matches
+        </Button>
       </div>
 
       {/* Search & Filters */}

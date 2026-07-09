@@ -83,6 +83,21 @@ export const clearHistory = mutation({
   },
 });
 
+// ─── saveMessage ───────────────────────────────────────────────
+export const saveMessage = mutation({
+  args: { role: v.string(), content: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const messageId = await ctx.db.insert("chatMessages", {
+      userId: user._id,
+      role: args.role,
+      content: args.content,
+      createdAt: Date.now(),
+    });
+    return messageId;
+  },
+});
+
 // ─── AI Response Generator ────────────────────────────────────
 // Smart contextual responses (replace with OpenAI API call later)
 function generateAIResponse(message, user) {
