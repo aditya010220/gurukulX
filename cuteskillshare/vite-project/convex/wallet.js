@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString, validateNumber } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -64,6 +65,9 @@ export const getStats = query({
 export const listTransactions = query({
   args: { filterType: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    if (args.filterType !== undefined) {
+      validateString(args.filterType, { enumValues: ["all", "earned", "spent"], name: "filterType" });
+    }
     const user = await getCurrentUser(ctx);
 
     const transactions = await ctx.db
@@ -118,6 +122,11 @@ export const addCoins = mutation({
     icon: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    validateNumber(args.amount, { min: 1, max: 10000, isInteger: true, name: "amount" });
+    validateString(args.label, { min: 1, max: 200, name: "label" });
+    if (args.icon !== undefined) {
+      validateString(args.icon, { min: 0, max: 100, name: "icon" });
+    }
     const user = await getCurrentUser(ctx);
 
     // Update balance
@@ -148,6 +157,11 @@ export const deductCoins = mutation({
     icon: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    validateNumber(args.amount, { min: 1, max: 10000, isInteger: true, name: "amount" });
+    validateString(args.label, { min: 1, max: 200, name: "label" });
+    if (args.icon !== undefined) {
+      validateString(args.icon, { min: 0, max: 100, name: "icon" });
+    }
     const user = await getCurrentUser(ctx);
 
     if (user.skillCoins < args.amount) {

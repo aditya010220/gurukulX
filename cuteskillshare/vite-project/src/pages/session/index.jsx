@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useStream } from "../../components/providers/StreamProvider";
+import { sanitizeErrorMessage } from "../../utils/errorUtils";
 import {
   StreamCall,
   StreamTheme as VideoTheme,
@@ -115,7 +116,7 @@ const JoinSessionPage = () => {
   useEffect(() => {
     if (streamLoading) return;
     if (streamError) {
-      setSessionError(streamError);
+      setSessionError(sanitizeErrorMessage(streamError, "Failed to initialize communication services"));
       setJoining(false);
       return;
     }
@@ -160,8 +161,7 @@ const JoinSessionPage = () => {
         setJoining(false);
 
       } catch (err) {
-        console.error("Failed to join call/chat session:", err);
-        setSessionError(err.message || "Failed to establish video call or chat channel");
+        setSessionError(sanitizeErrorMessage(err, "Failed to establish video call or chat channel"));
         setJoining(false);
       }
     };

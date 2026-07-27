@@ -5,6 +5,7 @@ import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import ContextualModal from '../../components/ui/ContextualModal';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const levelColors = {
   Beginner: 'bg-success/20 text-success-foreground',
@@ -48,13 +49,13 @@ const CoursesPage = () => {
           });
           showNotification('success', `Successfully enrolled in "${offering.title}"!`);
         } catch (err) {
-          console.error(err);
+          const cleanMsg = sanitizeErrorMessage(err, 'An error occurred during enrollment.');
           setModalContent({
             type: 'default',
             title: 'Enrollment Failed',
-            description: err.message || 'An error occurred during enrollment.',
+            description: cleanMsg,
           });
-          showNotification('error', err.message || 'Payment failed.');
+          showNotification('error', cleanMsg);
         }
       },
     });
@@ -78,13 +79,13 @@ const CoursesPage = () => {
           });
           showNotification('success', `Successfully booked a session for "${offering.title}"!`);
         } catch (err) {
-          console.error(err);
+          const cleanMsg = sanitizeErrorMessage(err, 'An error occurred during booking.');
           setModalContent({
             type: 'default',
             title: 'Booking Failed',
-            description: err.message || 'An error occurred during booking.',
+            description: cleanMsg,
           });
-          showNotification('error', err.message || 'Booking failed.');
+          showNotification('error', cleanMsg);
         }
       },
     });

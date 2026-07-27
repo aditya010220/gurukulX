@@ -5,6 +5,7 @@ import OwnProfileCard from './components/OwnProfileCard';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const OwnProfilePage = () => {
   const convexUser = useQuery(api.users.getCurrent);
@@ -71,8 +72,7 @@ const OwnProfilePage = () => {
 
       setIsEditModalOpen(false);
     } catch (err) {
-      console.error('Failed to update profile:', err);
-      alert(err.message || 'Failed to update profile');
+      alert(sanitizeErrorMessage(err, 'Failed to update profile'));
     } finally {
       setSaving(false);
     }

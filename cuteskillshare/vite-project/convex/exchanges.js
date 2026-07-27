@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString, validateNumber } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx, { throwIfMissing = true } = {}) {
@@ -144,6 +145,14 @@ export const create = mutation({
     nextSession: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    validateString(args.teachingSkill, { min: 1, max: 100, name: "teachingSkill" });
+    validateString(args.learningSkill, { min: 1, max: 100, name: "learningSkill" });
+    validateNumber(args.totalSessions, { min: 1, max: 100, isInteger: true, name: "totalSessions" });
+    if (args.nextSession !== undefined) {
+      validateString(args.nextSession, { min: 0, max: 200, name: "nextSession" });
+    }
+
     const user = await getCurrentUser(ctx);
 
     if (args.partnerId === user._id) {
@@ -176,6 +185,7 @@ export const reschedule = mutation({
     nextSession: v.string(),
   },
   handler: async (ctx, args) => {
+    validateString(args.nextSession, { min: 1, max: 200, name: "nextSession" });
     const user = await getCurrentUser(ctx);
     const exchange = await ctx.db.get(args.exchangeId);
 
@@ -266,6 +276,7 @@ export const updateStatus = mutation({
     status: v.string(),
   },
   handler: async (ctx, args) => {
+    validateString(args.status, { enumValues: ["active", "completed", "pending"], name: "status" });
     const user = await getCurrentUser(ctx);
     const exchange = await ctx.db.get(args.exchangeId);
 
@@ -290,6 +301,7 @@ export const rate = mutation({
     rating: v.number(),
   },
   handler: async (ctx, args) => {
+    validateNumber(args.rating, { min: 1, max: 5, isInteger: true, name: "rating" });
     const user = await getCurrentUser(ctx);
     const exchange = await ctx.db.get(args.exchangeId);
 

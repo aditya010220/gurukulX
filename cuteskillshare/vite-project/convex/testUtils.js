@@ -279,3 +279,27 @@ export const createTestSession = mutation({
     return { sessionId };
   },
 });
+
+// Test rate limiter functionality
+export const testRateLimitEndpoint = mutation({
+  args: {
+    key: v.string(),
+    type: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { checkRateLimit } = await import("./rateLimiter");
+    const results = [];
+    
+    // We try to trigger it 7 times in a row
+    for (let i = 0; i < 7; i++) {
+      const res = await checkRateLimit(ctx, {
+        key: args.key,
+        endpoint: "test.endpoint",
+        type: args.type,
+      });
+      results.push(res);
+    }
+    
+    return results;
+  },
+});

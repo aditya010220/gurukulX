@@ -12,6 +12,7 @@ import AIAssistantBlock from './components/AIAssistantBlock';
 import CommunityFeedCard from './components/CommunityFeedCard';
 import MarketplacePreviewCard from './components/MarketPlacePreviewCard';
 import { getTimeAgo } from '../../utils/getTimeAgo';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 import Button from '../../components/ui/Button';
 
@@ -50,11 +51,10 @@ const PersonalUserHub = () => {
             description: `You have successfully booked "${offering.title}". A calendar session has been created. Check it under 'My Booked Sessions' on the View Courses page.`,
           });
         } catch (err) {
-          console.error('Booking failed:', err.message);
           setModalContent({
             type: 'default',
             title: 'Booking Failed',
-            description: err.message || 'An error occurred during booking. Please try again.',
+            description: sanitizeErrorMessage(err, 'An error occurred during booking. Please try again.'),
           });
         }
       },

@@ -33,3 +33,13 @@ body::-webkit-scrollbar,
   -webkit-appearance: none;
   appearance: none;
 }
+
+.auth-mobile-brand {
+  display: none;
+}
+
+@media (max-width: 1023px) and (max-height: 768px) {
+  .auth-mobile-brand {
+    display: flex;
+  }
+}

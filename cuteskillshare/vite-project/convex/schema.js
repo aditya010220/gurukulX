@@ -188,4 +188,15 @@ export default defineSchema({
   })
     .index("by_receiver", ["receiverId"])
     .index("by_receiver_unread", ["receiverId", "isRead"]),
+
+  rateLimits: defineTable({
+    key: v.string(),
+    endpoint: v.string(),
+    hits: v.number(),
+    windowStart: v.number(),
+    lastAttempt: v.number(),
+    consecutiveViolations: v.optional(v.number()),
+    backoffDelay: v.optional(v.number()),
+  })
+    .index("by_key_endpoint", ["key", "endpoint"]),
 });

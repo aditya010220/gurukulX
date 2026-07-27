@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const fallbackMatches = [
   {
@@ -60,8 +61,7 @@ const SmartMatchesPage = () => {
       });
       alert("Connection request sent!");
     } catch (err) {
-      console.error('Connect failed:', err);
-      alert(err.message || "Failed to send connection request");
+      alert(sanitizeErrorMessage(err, "Failed to send connection request"));
     }
   };
 

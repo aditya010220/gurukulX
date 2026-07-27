@@ -1,5 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { adjustStreak } from "./users";
+import { validateString } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -19,6 +21,7 @@ async function getCurrentUser(ctx) {
 export const getBySessionId = query({
   args: { sessionId: v.string() },
   handler: async (ctx, args) => {
+    validateString(args.sessionId, { min: 1, max: 200, name: "sessionId" });
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
@@ -50,8 +53,8 @@ export const getBySessionId = query({
       return {
         type: "course",
         booking,
-        student,
-        mentor,
+        student: adjustStreak(student),
+        mentor: adjustStreak(mentor),
         course,
         authorized: true,
       };
@@ -102,7 +105,7 @@ export const getBySessionId = query({
       return {
         type: "swap",
         session,
-        partner,
+        partner: adjustStreak(partner),
         authorized: true,
       };
     }

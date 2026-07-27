@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString, validateSkillsArray } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -79,6 +80,13 @@ export const create = mutation({
     skillTags: v.array(v.string()),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    validateString(args.content, { min: 1, max: 10000, name: "content" });
+    if (args.achievement !== undefined) {
+      validateString(args.achievement, { min: 1, max: 500, name: "achievement" });
+    }
+    validateSkillsArray(args.skillTags, "skillTags");
+
     const user = await getCurrentUser(ctx);
 
     if (!args.content.trim()) throw new Error("Content cannot be empty");
@@ -195,6 +203,7 @@ export const addComment = mutation({
     text: v.string(),
   },
   handler: async (ctx, args) => {
+    validateString(args.text, { min: 1, max: 2000, name: "text" });
     const user = await getCurrentUser(ctx);
 
     if (!args.text.trim()) throw new Error("Comment cannot be empty");

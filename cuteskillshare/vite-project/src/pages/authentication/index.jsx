@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import LoginForm from './components/LoginForm';
 import CulturalBackground from './components/CulturalBackground';
-import Icon from '../../components/AppIcon';
 
 const AuthenticationPage = () => {
   const navigate = useNavigate();
@@ -26,12 +25,12 @@ const AuthenticationPage = () => {
         <div className="w-full max-w-md">
           <div className="bg-card rounded-2xl shadow-warm-lg p-6 md:p-8">
             {/* Mobile Logo */}
-            <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                <Icon name="ChefHat" size={24} color="white" />
+            <div className="auth-mobile-brand items-center justify-center space-x-3 mb-8">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                <img src="/logo.png" alt="GuruKulX logo" className="w-full h-full object-contain p-1" />
               </div>
               <div>
-                <h1 className="text-2xl font-heading font-bold text-foreground">Rural Catering</h1>
+                <h1 className="text-2xl font-heading font-bold text-foreground">GuruKulX</h1>
               </div>
             </div>
 

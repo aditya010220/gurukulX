@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -29,6 +30,18 @@ export const create = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    validateString(args.offerSkill, { min: 1, max: 100, name: "offerSkill" });
+    validateString(args.offerCategory, { min: 1, max: 100, name: "offerCategory" });
+    validateString(args.offerLevel, { enumValues: ["Beginner", "Intermediate", "Advanced"], name: "offerLevel" });
+    validateString(args.learnSkill, { min: 1, max: 100, name: "learnSkill" });
+    validateString(args.learnCategory, { min: 1, max: 100, name: "learnCategory" });
+    validateString(args.learnLevel, { enumValues: ["Beginner", "Intermediate", "Advanced"], name: "learnLevel" });
+    validateString(args.availability, { min: 1, max: 200, name: "availability" });
+    if (args.description !== undefined) {
+      validateString(args.description, { min: 0, max: 5000, name: "description" });
+    }
+
     const user = await getCurrentUser(ctx);
 
     const requestId = await ctx.db.insert("exchangeRequests", {

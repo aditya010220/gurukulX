@@ -3,6 +3,7 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { StreamChat } from "stream-chat";
 import { StreamVideoClient } from "@stream-io/video-react-sdk";
+import { sanitizeErrorMessage } from "../../utils/errorUtils";
 
 // Import CSS
 import "stream-chat-react/dist/css/index.css";
@@ -96,9 +97,8 @@ export const StreamProvider = ({ children }) => {
         setIsLoading(false);
 
       } catch (err) {
-        console.error("Failed to initialize Stream SDKs:", err);
         if (isSubscribed) {
-          setError(err.message || "Failed to connect to communication services");
+          setError(sanitizeErrorMessage(err, "Failed to connect to communication services"));
           setIsLoading(false);
         }
       }

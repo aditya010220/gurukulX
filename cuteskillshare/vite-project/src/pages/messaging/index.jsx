@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useStream } from "../../components/providers/StreamProvider";
+import { sanitizeErrorMessage } from "../../utils/errorUtils";
 import {
   Chat,
   Channel as StreamChannel,
@@ -83,8 +84,7 @@ const MessagingPage = () => {
       const { sessionId } = await getOrCreateSession({ partnerId: selectedPartner._id });
       navigate(`/session/${sessionId}`);
     } catch (err) {
-      console.error("Failed to start session:", err);
-      alert(err.message || "Could not start session");
+      alert(sanitizeErrorMessage(err, "Could not start session"));
     } finally {
       setStartingCall(false);
     }

@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -23,6 +24,9 @@ export const list = query({
     tab: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (args.search !== undefined) validateString(args.search, { min: 0, max: 100, name: "search" });
+    if (args.tab !== undefined) validateString(args.tab, { min: 0, max: 100, name: "tab" });
+
     const identity = await ctx.auth.getUserIdentity();
     let currentUser = null;
 

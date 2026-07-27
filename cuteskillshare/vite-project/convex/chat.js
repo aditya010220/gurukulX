@@ -1,5 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { adjustStreak } from "./users";
+import { validateString } from "./validator";
+import { checkRateLimit } from "./rateLimiter";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -37,7 +40,18 @@ export const getHistory = query({
 export const sendMessage = mutation({
   args: { content: v.string() },
   handler: async (ctx, args) => {
+    validateString(args.content, { min: 1, max: 10000, name: "content" });
     const user = await getCurrentUser(ctx);
+
+    // Rate Limiting: general authenticated user action
+    const limitCheck = await checkRateLimit(ctx, {
+      key: `user:${user._id}`,
+      endpoint: "chat.sendMessage",
+      type: "authenticated",
+    });
+    if (!limitCheck.allowed) {
+      throw new Error(limitCheck.reason);
+    }
 
     if (!args.content.trim()) throw new Error("Message cannot be empty");
 
@@ -50,7 +64,7 @@ export const sendMessage = mutation({
     });
 
     // Generate contextual AI response based on user's message
-    const response = generateAIResponse(args.content, user);
+    const response = generateAIResponse(args.content, adjustStreak(user));
 
     // Save assistant response
     await ctx.db.insert("chatMessages", {
@@ -87,7 +101,22 @@ export const clearHistory = mutation({
 export const saveMessage = mutation({
   args: { role: v.string(), content: v.string() },
   handler: async (ctx, args) => {
+    validateString(args.role, { enumValues: ["user", "assistant"], name: "role" });
+    validateString(args.content, { min: 1, max: 10000, name: "content" });
     const user = await getCurrentUser(ctx);
+
+    // Rate Limiting: general authenticated user action (only for messages generated/saved by user)
+    if (args.role === "user") {
+      const limitCheck = await checkRateLimit(ctx, {
+        key: `user:${user._id}`,
+        endpoint: "chat.saveMessage",
+        type: "authenticated",
+      });
+      if (!limitCheck.allowed) {
+        throw new Error(limitCheck.reason);
+      }
+    }
+
     const messageId = await ctx.db.insert("chatMessages", {
       userId: user._id,
       role: args.role,

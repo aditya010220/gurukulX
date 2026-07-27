@@ -1,5 +1,37 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import {
+  validateName,
+  validateEmail,
+  validateString,
+  validateUrl,
+  validateSkillsArray,
+  validateSocial
+} from "./validator";
+import { checkRateLimit } from "./rateLimiter";
+
+// ─── Streak Helper ──────────────────────────────────────────────
+export function adjustStreak(user) {
+  if (!user) return null;
+  if (!user.lastActive) return { ...user, currentStreak: 0 };
+  
+  const now = Date.now();
+  const lastActiveDate = new Date(user.lastActive);
+  const nowDate = new Date(now);
+  
+  const lastActiveDay = Date.UTC(lastActiveDate.getUTCFullYear(), lastActiveDate.getUTCMonth(), lastActiveDate.getUTCDate());
+  const nowDay = Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), nowDate.getUTCDate());
+  
+  const diffDays = Math.round((nowDay - lastActiveDay) / (24 * 60 * 60 * 1000));
+  
+  if (diffDays > 1) {
+    return {
+      ...user,
+      currentStreak: 0,
+    };
+  }
+  return user;
+}
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -22,10 +54,46 @@ export const getOrCreate = mutation({
     name: v.string(),
     email: v.string(),
     referredBy: v.optional(v.string()),
+    clientIp: v.optional(v.string()),
+    clientId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    validateName(args.name, "name");
+    validateEmail(args.email, "email");
+    if (args.referredBy !== undefined) {
+      validateString(args.referredBy, { min: 0, max: 100, name: "referredBy" });
+    }
+    if (args.clientIp !== undefined) {
+      validateString(args.clientIp, { min: 0, max: 100, name: "clientIp" });
+    }
+    if (args.clientId !== undefined) {
+      validateString(args.clientId, { min: 0, max: 100, name: "clientId" });
+    }
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
+
+    // Rate Limiting: combination of per-IP/client and per-account limits with exponential backoff
+    const ipKey = `ip:${args.clientIp || args.clientId || identity.subject}`;
+    const ipLimitCheck = await checkRateLimit(ctx, {
+      key: ipKey,
+      endpoint: "users.getOrCreate",
+      type: "auth",
+    });
+    if (!ipLimitCheck.allowed) {
+      throw new Error(ipLimitCheck.reason);
+    }
+
+    const accountKey = `account:${args.email}`;
+    const accountLimitCheck = await checkRateLimit(ctx, {
+      key: accountKey,
+      endpoint: "users.getOrCreate",
+      type: "auth",
+    });
+    if (!accountLimitCheck.allowed) {
+      throw new Error(accountLimitCheck.reason);
+    }
 
     const existing = await ctx.db
       .query("users")
@@ -48,8 +116,8 @@ export const getOrCreate = mutation({
         const lastActiveDate = new Date(lastActive);
         const nowDate = new Date(now);
         
-        const lastActiveDay = new Date(lastActiveDate.getFullYear(), lastActiveDate.getMonth(), lastActiveDate.getDate()).getTime();
-        const nowDay = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()).getTime();
+        const lastActiveDay = Date.UTC(lastActiveDate.getUTCFullYear(), lastActiveDate.getUTCMonth(), lastActiveDate.getUTCDate());
+        const nowDay = Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), nowDate.getUTCDate());
         
         const diffDays = Math.round((nowDay - lastActiveDay) / (24 * 60 * 60 * 1000));
         
@@ -227,7 +295,7 @@ export const getCurrent = query({
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
-    return user;
+    return adjustStreak(user);
   },
 });
 
@@ -236,7 +304,8 @@ export const getCurrent = query({
 export const getById = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId);
+    const user = await ctx.db.get(args.userId);
+    return adjustStreak(user);
   },
 });
 
@@ -254,7 +323,28 @@ export const updateProfile = mutation({
     twitter: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    if (args.name !== undefined) validateName(args.name, "name");
+    if (args.title !== undefined) validateString(args.title, { min: 0, max: 100, name: "title" });
+    if (args.location !== undefined) validateString(args.location, { min: 0, max: 100, name: "location" });
+    if (args.avatar !== undefined) validateUrl(args.avatar, "avatar");
+    if (args.skills !== undefined) validateSkillsArray(args.skills, "skills");
+    if (args.learningGoals !== undefined) validateSkillsArray(args.learningGoals, "learningGoals");
+    if (args.github !== undefined) validateSocial(args.github, "github");
+    if (args.linkedin !== undefined) validateSocial(args.linkedin, "linkedin");
+    if (args.twitter !== undefined) validateSocial(args.twitter, "twitter");
+
     const user = await getCurrentUser(ctx);
+
+    // Rate Limiting: general authenticated user action
+    const limitCheck = await checkRateLimit(ctx, {
+      key: `user:${user._id}`,
+      endpoint: "users.updateProfile",
+      type: "authenticated",
+    });
+    if (!limitCheck.allowed) {
+      throw new Error(limitCheck.reason);
+    }
 
     const updates = {};
     if (args.name !== undefined) updates.name = args.name;
@@ -280,6 +370,7 @@ export const updateProfile = mutation({
 export const search = query({
   args: { searchQuery: v.string() },
   handler: async (ctx, args) => {
+    validateString(args.searchQuery, { min: 0, max: 100, name: "searchQuery" });
     if (!args.searchQuery || args.searchQuery.length < 2) return [];
 
     const allUsers = await ctx.db.query("users").collect();
@@ -306,7 +397,8 @@ export const search = query({
 export const debugListAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("users").collect();
+    const users = await ctx.db.query("users").collect();
+    return users.map(adjustStreak);
   },
 });
 

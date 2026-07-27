@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -99,6 +100,20 @@ export const create = mutation({
     message: v.string(),
   },
   handler: async (ctx, args) => {
+    validateString(args.type, {
+      enumValues: [
+        "Connection Request",
+        "Connection Accepted",
+        "Connection Rejected",
+        "Session Started",
+        "Booking Confirmed",
+        "New Message"
+      ],
+      name: "type"
+    });
+    validateString(args.title, { min: 1, max: 100, name: "title" });
+    validateString(args.message, { min: 1, max: 1000, name: "message" });
+
     const user = await getCurrentUser(ctx);
 
     const notificationId = await ctx.db.insert("notifications", {

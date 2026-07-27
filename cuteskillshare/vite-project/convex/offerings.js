@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString, validateUrl, validateNumber } from "./validator";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -24,6 +25,12 @@ export const list = query({
     sortBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (args.search !== undefined) validateString(args.search, { min: 0, max: 100, name: "search" });
+    if (args.category !== undefined) validateString(args.category, { min: 0, max: 100, name: "category" });
+    if (args.sortBy !== undefined) {
+      validateString(args.sortBy, { enumValues: ["popular", "price-low", "price-high", "rating"], name: "sortBy" });
+    }
+
     let offerings;
 
     // Use category index if filtering
@@ -176,6 +183,15 @@ export const create = mutation({
     price: v.number(),
   },
   handler: async (ctx, args) => {
+    // Strict schema validation
+    validateString(args.title, { min: 2, max: 100, name: "title" });
+    validateString(args.description, { min: 10, max: 5000, name: "description" });
+    validateUrl(args.coverImage, "coverImage");
+    validateString(args.duration, { min: 1, max: 100, name: "duration" });
+    validateString(args.level, { enumValues: ["Beginner", "Intermediate", "Advanced"], name: "level" });
+    validateString(args.category, { min: 1, max: 100, name: "category" });
+    validateNumber(args.price, { min: 0, max: 1000, isInteger: true, name: "price" });
+
     const user = await getCurrentUser(ctx);
 
     const offeringId = await ctx.db.insert("marketplaceOfferings", {

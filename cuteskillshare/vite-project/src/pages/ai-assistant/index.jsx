@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const quickPrompts = [
   { icon: 'Calendar', label: 'Generate a 7-day learning plan' },
@@ -39,6 +40,7 @@ const AIAssistantPage = () => {
   const chatHistory = useQuery(api.chat.getHistory);
   const saveMessageMutation = useMutation(api.chat.saveMessage);
   const clearHistoryMutation = useMutation(api.chat.clearHistory);
+  const generateGeminiResponse = useAction(api.gemini.generateResponse);
 
   const handleClearChat = async () => {
     if (window.confirm("Are you sure you want to clear your chat history?")) {
@@ -111,34 +113,18 @@ const AIAssistantPage = () => {
         contents.pop();
       }
 
-      // 3. Make fetch request to the Gemini API using the working model gemini-3.1-flash-lite
-      const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDNWOBFRhnrW6O4-pHGKHJyZ5aReHFHRts";
-      const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
-
-      const res = await fetch(GEMINI_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ contents }),
-      });
-
-      const data = await res.json();
-      if (data?.error) {
-        throw new Error(data.error.message || "Gemini API error");
-      }
-      const assistantText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
-        "I'm sorry, I couldn't generate a response. Please try again.";
+      // 3. Request Gemini response from our secure backend action
+      const assistantText = await generateGeminiResponse({ contents });
 
       // 4. Save the Gemini response to Convex database
       await saveMessageMutation({ role: 'assistant', content: assistantText });
 
     } catch (err) {
-      console.error('Send/Gemini failed:', err);
-      // Save error fallback message
+      // Save error fallback message securely without leaking API keys or stack traces
+      const cleanMsg = sanitizeErrorMessage(err, 'An error occurred during Gemini API call.');
       await saveMessageMutation({
         role: 'assistant',
-        content: `Error generating response: ${err.message || 'An error occurred during Gemini API call.'}`,
+        content: `Error generating response: ${cleanMsg}`,
       });
     } finally {
       setIsTyping(false);

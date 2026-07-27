@@ -5,6 +5,7 @@ import { StreamChat } from "stream-chat";
 import { StreamVideoClient, StreamCall, StreamTheme, SpeakerLayout, CallControls } from "@stream-io/video-react-sdk";
 import Button from "../../components/ui/Button";
 import Icon from "../../components/AppIcon";
+import { sanitizeErrorMessage } from "../../utils/errorUtils";
 
 const CoLearnerTestPage = () => {
   // ─── Convex State & Setup ─────────────────────────────────────
@@ -158,7 +159,7 @@ const CoLearnerTestPage = () => {
       setMode("live");
     } catch (err) {
       console.warn("Failed to initialize Live Stream SDK, falling back to simulated mode:", err);
-      setErrorMessage(err.message || "Failed to initialize live stream. Simulator mode activated.");
+      setErrorMessage(sanitizeErrorMessage(err, "Failed to initialize live stream. Simulator mode activated."));
       setMode("simulated");
     } finally {
       setLoading(false);

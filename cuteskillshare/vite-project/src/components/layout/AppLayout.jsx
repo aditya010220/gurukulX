@@ -26,10 +26,17 @@ const AppLayout = () => {
   useEffect(() => {
     if (user) {
       const referredBy = localStorage.getItem('referredBy') || undefined;
+      let clientId = localStorage.getItem('cuteskillshare_client_id');
+      if (!clientId) {
+        clientId = 'client-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('cuteskillshare_client_id', clientId);
+      }
+
       getOrCreate({
         name: user.fullName || user.firstName || 'Guest User',
         email: user.primaryEmailAddress?.emailAddress || '',
         referredBy,
+        clientId,
       })
         .then(() => {
           if (referredBy) {

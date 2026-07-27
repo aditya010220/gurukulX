@@ -5,6 +5,7 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import ContextualModal from '../../components/ui/ContextualModal';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const fallbackOfferings = [
   {
@@ -153,11 +154,10 @@ const MarketplacePage = () => {
             description: `You have successfully enrolled in "${offering.title}". You can access this course on your View Courses page.`,
           });
         } catch (err) {
-          console.error('Enroll failed:', err.message);
           setModalContent({
             type: 'default',
             title: 'Enrollment Failed',
-            description: err.message || 'An error occurred during enrollment. Please try again.',
+            description: sanitizeErrorMessage(err, 'An error occurred during enrollment. Please try again.'),
           });
         }
       },

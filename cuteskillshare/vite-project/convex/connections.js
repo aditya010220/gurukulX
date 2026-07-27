@@ -1,5 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { adjustStreak } from "./users";
+import { validateString, validateBoolean } from "./validator";
+import { checkRateLimit } from "./rateLimiter";
 
 // ─── Auth Helper ───────────────────────────────────────────────
 async function getCurrentUser(ctx) {
@@ -22,7 +25,20 @@ export const sendRequest = mutation({
     message: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (args.message !== undefined) {
+      validateString(args.message, { min: 0, max: 1000, name: "message" });
+    }
     const user = await getCurrentUser(ctx);
+
+    // Rate Limiting: general authenticated user action
+    const limitCheck = await checkRateLimit(ctx, {
+      key: `user:${user._id}`,
+      endpoint: "connections.sendRequest",
+      type: "authenticated",
+    });
+    if (!limitCheck.allowed) {
+      throw new Error(limitCheck.reason);
+    }
 
     if (user._id.toString() === args.receiverId.toString()) {
       throw new Error("Cannot connect with yourself");
@@ -235,7 +251,7 @@ export const listConnected = query({
       if (partner) {
         connectedUsers.push({
           connectionId: conn._id,
-          user: partner,
+          user: adjustStreak(partner),
           createdAt: conn.createdAt,
         });
       }
@@ -252,6 +268,7 @@ export const respondBySender = mutation({
     accept: v.boolean(),
   },
   handler: async (ctx, args) => {
+    validateBoolean(args.accept, "accept");
     const user = await getCurrentUser(ctx);
 
     const connection = await ctx.db

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { sanitizeErrorMessage } from '../../utils/errorUtils';
 
 const fallbackSwaps = [
   {
@@ -106,8 +107,7 @@ const MySwapsPage = () => {
       const { sessionId } = await getOrCreateSession({ partnerId });
       navigate(`/session/${sessionId}`);
     } catch (err) {
-      console.error("Failed to start session:", err);
-      alert(err.message || "Failed to start or join session.");
+      alert(sanitizeErrorMessage(err, "Failed to start or join session."));
     }
   };
 

@@ -1,5 +1,6 @@
 import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
+import { validateString } from "./validator";
 import { internal } from "./_generated/api";
 
 // ─── Auth Helper ───────────────────────────────────────────────
@@ -23,6 +24,9 @@ export const getForUser = query({
     filter: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (args.filter !== undefined) {
+      validateString(args.filter, { enumValues: ["90+", "80+"], name: "filter" });
+    }
     const user = await getCurrentUser(ctx);
 
     const matches = await ctx.db
