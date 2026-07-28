@@ -2,7 +2,7 @@
 
 ## Project Description
 
-SkillSwap is a scalable **MERN Stack** application that enables users to exchange skills through a peer-to-peer learning platform. Users can create profiles, showcase their expertise, discover compatible learning partners using intelligent skill matching, schedule learning sessions, communicate via real-time chat, and provide feedback after each session. The platform is built with a production-ready architecture, featuring secure authentication, automated CI/CD pipelines, and an optimized user experience.
+SkillSwap is a scalable **FULL Stack** application that enables users to exchange skills through a peer-to-peer learning platform. Users can create profiles, showcase their expertise, discover compatible learning partners using intelligent skill matching, schedule learning sessions, communicate via real-time chat, and provide feedback after each session. The platform is built with a production-ready architecture, featuring secure authentication, automated CI/CD pipelines, and an optimized user experience.
 
 ## 🚀 Features
 
