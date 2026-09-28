@@ -3,11 +3,28 @@
 ## Project Description
 
 SkillSwap is a scalable **FULL Stack** application that enables users to exchange skills through a peer-to-peer learning platform. Users can create profiles, showcase their expertise, discover compatible learning partners using intelligent skill matching, schedule learning sessions, communicate via real-time chat, and provide feedback after each session. The platform is built with a production-ready architecture, featuring secure authentication, automated CI/CD pipelines, and an optimized user experience.
+## 📁 Project Structure
 
+```
+react_app/
+├── convex/             # Backend
+├── public/             # Static assests
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/          # Page components
+│   ├── styles/         # Global styles and Tailwind configuration
+│   ├── App.jsx         # Main application component
+│   ├── Routes.jsx      # Application routes
+│   └── index.jsx       # Application entry point
+├── .env                # Environment variables
+├── index.html          # HTML template
+├── package.json        # Project dependencies and scripts
+├── tailwind.config.js  # Tailwind CSS configuration
+└── vite.config.js      # Vite configuration
+```
 ## 🚀 Features
 
 - **Secure Authentication**
-  - JWT-based authentication with protected routes.
   - User registration, login, and profile management.
 
 -  **Smart Skill Matching**
@@ -71,26 +88,6 @@ SkillSwap is a scalable **FULL Stack** application that enables users to exchang
    # or
    yarn start
    ```
-
-## 📁 Project Structure
-
-```
-react_app/
-├── convex/             # Backend
-├── public/             # Static assests
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/          # Page components
-│   ├── styles/         # Global styles and Tailwind configuration
-│   ├── App.jsx         # Main application component
-│   ├── Routes.jsx      # Application routes
-│   └── index.jsx       # Application entry point
-├── .env                # Environment variables
-├── index.html          # HTML template
-├── package.json        # Project dependencies and scripts
-├── tailwind.config.js  # Tailwind CSS configuration
-└── vite.config.js      # Vite configuration
-```
 
 ## 🧩 Adding Routes
 
