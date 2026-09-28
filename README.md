@@ -76,7 +76,8 @@ SkillSwap is a scalable **FULL Stack** application that enables users to exchang
 
 ```
 react_app/
-├── public/             # Static assets
+├── convex/             # Backend
+├── public/             # Static assests
 ├── src/
 │   ├── components/     # Reusable UI components
 │   ├── pages/          # Page components
