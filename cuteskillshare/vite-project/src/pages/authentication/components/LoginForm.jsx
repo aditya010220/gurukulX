@@ -60,7 +60,7 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <SignInButton mode="modal">
+      <SignInButton mode="modal" fallbackRedirectUrl="/personal-user-hub">
         <Button
           type="button"
           variant="primary"
@@ -80,7 +80,7 @@ const LoginForm = () => {
         </div>
       </div>
       
-      <SignUpButton mode="modal">
+      <SignUpButton mode="modal" fallbackRedirectUrl="/personal-user-hub">
         <Button
           type="button"
           variant="outline"

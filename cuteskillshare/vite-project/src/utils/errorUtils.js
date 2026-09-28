@@ -13,7 +13,13 @@ export function sanitizeErrorMessage(err, defaultMsg = "An unexpected error occu
   // Log full error details to the developer console/server-side interface
   console.error("Unfiltered Error details logged for developer diagnostics:", err);
 
-  const rawMessage = typeof err === 'string' ? err : err.message || '';
+  let rawMessage = typeof err === 'string' ? err : err.message || '';
+
+  // Extract core uncaught error message from Convex action/query errors if present
+  const uncaughtMatch = rawMessage.match(/Uncaught Error:\s*([^\n\r]+)/i);
+  if (uncaughtMatch && uncaughtMatch[1]) {
+    rawMessage = uncaughtMatch[1].trim();
+  }
 
   // Indicators of stack traces or internals
   const hasStackTrace = /at\s+[\w\d_$.]+\s+\(/i.test(rawMessage) || 
@@ -40,14 +46,15 @@ export function sanitizeErrorMessage(err, defaultMsg = "An unexpected error occu
                              /syntaxerror/i.test(rawMessage) ||
                              /evalerror/i.test(rawMessage) ||
                              /rangeerror/i.test(rawMessage) ||
-                             /urierror/i.test(rawMessage);
+                             /urierror/i.test(rawMessage) ||
+                             /key=/i.test(rawMessage);
 
   if (hasStackTrace || hasFilePath || hasInternalDetails) {
     return defaultMsg;
   }
 
   // If the message exists, is short, and doesn't contain any leaking terms, return it (cleaned of prefix wrappers)
-  if (rawMessage && rawMessage.length < 150) {
+  if (rawMessage && rawMessage.length < 250) {
     return rawMessage
       .replace(/^Error:\s*/i, '')
       .replace(/^ConvexError:\s*/i, '')

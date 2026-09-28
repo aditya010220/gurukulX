@@ -5,7 +5,7 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
 
-const CommunityFeedCard = ({ post, onLike, onComment, onShare }) => {
+const CommunityFeedCard = ({ post, onLike, onComment }) => {
   const likeMutation = useMutation(api.posts.like);
   const [isLiked, setIsLiked] = React.useState(post?.isLiked || false);
   const [likeCount, setLikeCount] = React.useState(post?.likes);
@@ -103,14 +103,6 @@ const CommunityFeedCard = ({ post, onLike, onComment, onShare }) => {
         >
           <Icon name="MessageCircle" size={20} />
           <span className="text-xs md:text-sm font-medium data-text">{post?.comments}</span>
-        </button>
-
-        <button
-          onClick={() => onShare && onShare(post)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth press-scale"
-        >
-          <Icon name="Share2" size={20} />
-          <span className="text-xs md:text-sm font-medium">Share</span>
         </button>
       </div>
     </div>

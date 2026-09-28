@@ -261,7 +261,7 @@ const PersonalUserHub = () => {
     achievement: "10 Exchanges Milestone",
     skillTags: ["Python", "DataScience", "PeerLearning"],
     likes: 42,
-    comments: 8,
+    comments: 1,
     isLiked: false
   },
   {
@@ -274,35 +274,8 @@ const PersonalUserHub = () => {
     content: "Huge shoutout to Sarah for teaching me advanced React patterns! The component composition techniques we covered today were mind-blowing. Can\'t wait for our next session.",
     skillTags: ["React", "WebDevelopment", "JavaScript"],
     likes: 38,
-    comments: 12,
-    isLiked: true
-  },
-  {
-    id: 3,
-    authorName: "Abhishek Verma",
-    authorAvatar: "https://i.pinimg.com/1200x/d0/96/30/d09630a68ff721c6fff999f138d33d33.jpg",
-    authorAvatarAlt: "Professional headshot of African American woman with curly hair in red top with bright smile",
-    isVerified: false,
-    timeAgo: "1 day ago",
-    content: "New to SkillGarden and already loving the community! Just had my first exchange session learning Figma. The gamification makes learning so engaging. 🌱",
-    achievement: "First Exchange Complete",
-    skillTags: ["Figma", "UIDesign", "NewMember"],
-    likes: 56,
-    comments: 15,
+    comments: 1,
     isLiked: false
-  },
-  {
-    id: 4,
-    authorName: "Riya Malhotra",
-    authorAvatar: "https://i.pinimg.com/736x/27/71/d1/2771d1549c2b569dc5acd3d51e28c1d8.jpg",
-    authorAvatarAlt: "Professional headshot of Hispanic man with beard wearing green shirt and professional demeanor",
-    isVerified: true,
-    timeAgo: "1 day ago",
-    content: "Reached 1500 SkillCoins today! 💰 The reward system really motivates consistent learning. Already planning my next skill exchange with Priya to learn Machine Learning basics.",
-    skillTags: ["Milestone", "SkillCoins", "MachineLearning"],
-    likes: 67,
-    comments: 20,
-    isLiked: true
   }];
 
 
@@ -460,10 +433,6 @@ const PersonalUserHub = () => {
     setModalOpen(true);
   };
 
-  const handlePostShare = (post) => {
-    console.log('Share post:', post);
-  };
-
   return (
     <div className="overflow-x-hidden">
           <div className="mb-6 md:mb-8 lg:mb-10">
@@ -559,22 +528,12 @@ const PersonalUserHub = () => {
                   key={post?.id}
                   post={post}
                   onLike={handlePostLike}
-                  onComment={handlePostComment}
-                  onShare={handlePostShare} />
+                  onComment={handlePostComment} />
 
                 )}
               </div>
 
-              <div className="mt-6 text-center">
-                <Button
-                  variant="outline"
-                  size="default"
-                  iconName="ChevronDown"
-                  iconPosition="right">
-                  
-                  Load More Posts
-                </Button>
-              </div>
+              
             </div>
 
             <div>

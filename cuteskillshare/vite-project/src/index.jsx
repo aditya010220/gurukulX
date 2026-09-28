@@ -25,7 +25,12 @@ const container = document.getElementById("root");
 const root = createRoot(container);
 
 root.render(
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+  <ClerkProvider
+    publishableKey={PUBLISHABLE_KEY}
+    afterSignOutUrl="/auth"
+    signInFallbackRedirectUrl="/personal-user-hub"
+    signUpFallbackRedirectUrl="/personal-user-hub"
+  >
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       <StreamProvider>
         <App />

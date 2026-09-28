@@ -18,7 +18,7 @@ const welcomeMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    "Hi there! 👋 I'm your AI Learning Assistant. I can help you plan your learning journey, suggest skill matches, and provide personalized recommendations. What would you like to explore today?",
+    "Hi! 👋 I am your AI assistant Athreya, here to help you learn, master new skills, and connect with peers on GuruKulX. What would you like to explore today?",
   timestamp: '10:00 AM',
 };
 
@@ -83,7 +83,12 @@ const AIAssistantPage = () => {
 
       // 2. Prepare conversation context for Gemini API
       const dbMessages = chatHistory && chatHistory.length > 0 ? chatHistory : [];
-      const rawContents = dbMessages.map((m) => ({
+      // Exclude error messages from past failures to avoid polluting the prompt
+      const validMessages = dbMessages.filter(
+        (m) => m.content && !m.content.startsWith('Error generating response:')
+      );
+
+      const rawContents = validMessages.map((m) => ({
         role: m.role === 'user' ? 'user' : 'model',
         parts: [{ text: m.content }],
       }));
@@ -113,6 +118,13 @@ const AIAssistantPage = () => {
         contents.pop();
       }
 
+      if (contents.length === 0) {
+        contents.push({
+          role: 'user',
+          parts: [{ text: content.trim() }],
+        });
+      }
+
       // 3. Request Gemini response from our secure backend action
       const assistantText = await generateGeminiResponse({ contents });
 
@@ -120,8 +132,9 @@ const AIAssistantPage = () => {
       await saveMessageMutation({ role: 'assistant', content: assistantText });
 
     } catch (err) {
+      console.error("AI Assistant error:", err);
       // Save error fallback message securely without leaking API keys or stack traces
-      const cleanMsg = sanitizeErrorMessage(err, 'An error occurred during Gemini API call.');
+      const cleanMsg = sanitizeErrorMessage(err, 'The AI model is temporarily experiencing high demand. Please try again shortly.');
       await saveMessageMutation({
         role: 'assistant',
         content: `Error generating response: ${cleanMsg}`,
@@ -158,9 +171,9 @@ const AIAssistantPage = () => {
             <Icon name="Bot" size={20} color="var(--color-primary-foreground)" />
           </div>
           <div>
-            <h1 className="text-2xl font-heading font-bold text-foreground">AI Assistant</h1>
+            <h1 className="text-2xl font-heading font-bold text-foreground">Athreya AI</h1>
             <p className="text-sm text-muted-foreground">
-              Powered by AI to accelerate your learning
+              Your GuruKulX guide to skills, learning roadmaps & peer exchange
             </p>
           </div>
         </div>
